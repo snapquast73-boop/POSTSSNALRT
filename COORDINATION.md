@@ -40,12 +40,15 @@ sessions were active; all scopes were claimed sequentially by f8d07dda).
 - 2026-11-20 — Link check: 13 unique internal refs across 6 HTML files, **0 broken**; Markdown local links 0 missing (incl. restored `docs/scoring-changes.md`).
 - 2026-11-20 — `node server.mjs` (PORT 4173): `/`, `/index.html`, `/game.html`, `/reviews.html`, `/sound-lab.html`, `/flagged-for-review.html`, CSS, JS, `/api/health`, `/api/feed-log` round-trip, `/api/alert-sound` → all 200; unknown path → 404. Test feed-log artifacts removed afterwards.
 - 2026-11-20 — DOM audit: every element ID referenced by page JS exists in its page (0 missing; `tab-btn` is a class, queried via `$$`).
+- 2026-11-20 — CI (PR #2): fixtures + **live StatsAPI smoke both pass**; post-merge `smoke` + `pages build and deployment` runs on `main` (`d95dea5`) both success. Live pages fetched and confirmed after deploy.
 
 ## PR / merge record
 
-- PR: (filled in after creation — see below)
-- Merge result: (filled in after merge)
-- Pages deploy: (filled in after deploy check)
+- PR: https://github.com/snapquast73-boop/POSTSSNALRT/pull/2 — "Rebuild missing assets/docs/tools — restore working GitHub Pages site"
+- CI on PR: `fixtures` pass (9s), `live` pass (5s) — live StatsAPI smoke verified in CI (schedule, gameStatus, eventTypes, teams all 200/JSON), resolving the sandbox half of F-02.
+- Merge result: **MERGED** 2026-11-20T22:20:25Z, merge commit `d95dea54b87953f6739c688d077b80cd9099c08f` (no approval wait, per brief; flagged items non-blocking).
+- Pages deploy: `pages build and deployment` run on `d95dea5` — **success**; Pages status `built`; live site verified at https://snapquast73-boop.github.io/POSTSSNALRT/ and https://snapquast73-boop.github.io/POSTSSNALRT/flagged-for-review.html (both fetched live after deploy).
+- This record was added on the integration branch after merge and fast-forwarded to `main` via a follow-up docs PR (see git history).
 
 ## Flagged items (needs review — published, non-blocking)
 
