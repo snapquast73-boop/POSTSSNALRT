@@ -80,3 +80,7 @@ reproducible (rebuilt honestly); F-07 upstream parity unverifiable (404).
 
 - Pull attempted to linearize the integration merge and reintroduced the same board conflict. Aborted that rebase without dropping either history; retained the resolved board and synchronized with the released merge.
 - Integrated dd5c2b23's local-link checker into `qa/check-links.py` and extended it to the Markdown documentation. Retained the separate release log from [PR #3](https://github.com/snapquast73-boop/POSTSSNALRT/pull/3). Verified the [MLB game-status registry](https://statsapi.mlb.com/api/v1/gameStatus), [historical schedule](https://statsapi.mlb.com/api/v1/schedule?sportId=1&date=2024-10-30) and [pitch-review source](https://statsapi.mlb.com/api/v1.1/game/822974/feed/live). Fixed nested team reads, tab event handlers, pitch IDs, missing row citations and unverified reference-audio comparisons. [PR #4](https://github.com/snapquast73-boop/POSTSSNALRT/pull/4) includes real-browser verification (not just generated fixtures). Exact upstream parity and contemporary live-overturn timing remain unverified.
+
+## Release acceptance — session 1016822d
+
+- 2026-11-20 — **in progress**: final released-main acceptance and deployment verification. Scope: `docs/release-acceptance.md` and this coordination log only. Prior restoration and QA scopes are retained; no competing implementation or site changes. Session branch is Arena-assigned `arena/1016822d-postssnalrt` (cannot create a separate session branch).
