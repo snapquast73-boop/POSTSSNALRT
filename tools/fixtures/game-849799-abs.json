@@ -1,0 +1,64 @@
+{
+  "_provenance": {
+    "note": "Two verbatim official MLB responses for the same game, assembled into one document so a single test can cover the counter shape and the pitch-level review shape together. No value was invented, altered or reordered; the two captures are kept under separate keys so each can be checked against its own URL. Game 849799 is the last game of the 2026 season (game type 'W', 2026-10-28). It contains exactly two reviewDetails records in the whole play-by-play, both ABS pitch challenges (reviewType MJ), one per club — which is consistent with the official counters (usedSuccessful 1 for each side, usedFailed 0). Note that the playEvent array `index` and the official `pitchNumber` are NOT the same number in either record.",
+    "captures": [
+      {
+        "url": "https://statsapi.mlb.com/api/v1.1/game/849799/feed/live?fields=gamePk,gameData,absChallenges,hasChallenges,away,home,used,remaining,usedSuccessful,usedFailed,review,teams,name,abbreviation,id,status,statusCode,detailedState,datetime,officialDate,game,type,season",
+        "key": "gameData"
+      },
+      {
+        "url": "https://statsapi.mlb.com/api/v1/game/849799/playByPlay?fields=allPlays,about,atBatIndex,playEvents,index,pitchNumber,reviewDetails,reviewType,isOverturned,challengeTeamId",
+        "key": "reviewPlays",
+        "note": "Verbatim, unaltered, but restricted to the only two at-bats in the game that carry reviewDetails (atBatIndex 36 and 51). Every other at-bat in that response had no reviewDetails key at all."
+      }
+    ],
+    "fetchedOn": "2026-11-21",
+    "crossCheck": "away usedSuccessful 1 / usedFailed 0 matches the single MJ record with challengeTeamId 158 (MIL, away); home usedSuccessful 1 / usedFailed 0 matches the single MJ record with challengeTeamId 139 (TB, home). Both records have isOverturned true, which is what a successful challenge means in these counters."
+  },
+  "gameData": {
+    "gamePk": 849799,
+    "gameData": {
+      "game": {"type": "W", "id": "2026-10-28/milmlb-tbamlb-1", "season": "2026"},
+      "datetime": {"officialDate": "2026-10-28"},
+      "status": {"detailedState": "Final", "statusCode": "F"},
+      "teams": {
+        "away": {"id": 158, "name": "Milwaukee Brewers", "season": 2026, "abbreviation": "MIL"},
+        "home": {"id": 139, "name": "Tampa Bay Rays", "season": 2026, "abbreviation": "TB"}
+      },
+      "review": {
+        "hasChallenges": false,
+        "away": {"used": 0, "remaining": 2},
+        "home": {"used": 0, "remaining": 2}
+      },
+      "absChallenges": {
+        "hasChallenges": true,
+        "away": {"usedSuccessful": 1, "usedFailed": 0, "remaining": 2},
+        "home": {"usedSuccessful": 1, "usedFailed": 0, "remaining": 2}
+      }
+    }
+  },
+  "reviewPlays": {
+    "allPlays": [
+      {
+        "about": {"atBatIndex": 36},
+        "playEvents": [
+          {"index": 0, "pitchNumber": 1},
+          {"index": 1, "pitchNumber": 2, "reviewDetails": {"isOverturned": true, "reviewType": "MJ", "challengeTeamId": 158}},
+          {"index": 2, "pitchNumber": 3},
+          {"index": 3, "pitchNumber": 4},
+          {"index": 4, "pitchNumber": 5}
+        ],
+        "atBatIndex": 36
+      },
+      {
+        "about": {"atBatIndex": 51},
+        "playEvents": [
+          {"index": 0, "pitchNumber": 1, "reviewDetails": {"isOverturned": true, "reviewType": "MJ", "challengeTeamId": 139}},
+          {"index": 1, "pitchNumber": 2},
+          {"index": 2, "pitchNumber": 3}
+        ],
+        "atBatIndex": 51
+      }
+    ]
+  }
+}

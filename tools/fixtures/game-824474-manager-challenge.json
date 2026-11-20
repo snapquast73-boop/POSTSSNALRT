@@ -1,0 +1,54 @@
+{
+  "_provenance": {
+    "note": "Three verbatim official MLB captures for game 824474 (2026-08-20, St. Louis Cardinals at Cincinnati Reds, Final), kept under separate keys so each can be checked against its own URL. No value was invented, altered or reordered. This is the fixture that proves the review-code mapping: the play at atBatIndex 65 has eventType 'hit_by_pitch' and reviewDetails.reviewType 'MI', and the official registry defines MI as 'Manager challenge: Hit by pitch'. The same record proves reviewDetails is an OBJECT, not an array, and that the challenging club is identified only by team id (113), which gameData.teams resolves to the Cincinnati Reds (home). The official manager-challenge counters for that game (home used 1, remaining 0; away used 0, remaining 1) match the single manager-challenge record in the play-by-play.",
+    "captures": [
+      {
+        "url": "https://statsapi.mlb.com/api/v1.1/game/824474/feed/live?fields=gamePk,gameData,teams,away,home,id,name,abbreviation,datetime,officialDate,status,detailedState,statusCode,review,used,remaining,hasChallenges,absChallenges,usedSuccessful,usedFailed",
+        "key": "gameData"
+      },
+      {
+        "url": "https://statsapi.mlb.com/api/v1/game/824474/playByPlay?fields=allPlays,about,atBatIndex,reviewDetails,reviewType,isOverturned,inProgress,reason,challengeTeamId",
+        "key": "reviewPlayWithProgress"
+      },
+      {
+        "url": "https://statsapi.mlb.com/api/v1/game/824474/playByPlay?fields=allPlays,about,atBatIndex,result,eventType,reviewDetails,reviewType,reason,isOverturned,challengeTeamId",
+        "key": "reviewPlayWithResult",
+        "note": "Verbatim, unaltered, but restricted to the only at-bat in the game that carries reviewDetails (atBatIndex 65). The other 84 at-bats in that response had no reviewDetails key; three of them were also hit_by_pitch (atBatIndex 0, 33, 65), so an unreviewed hit-by-pitch is indistinguishable from a reviewed one except for the reviewDetails record itself."
+      }
+    ],
+    "fetchedOn": "2026-11-21",
+    "crossCheck": "challengeTeamId 113 == gameData.teams.home.id (Cincinnati Reds); review.home.used == 1 and review.away.used == 0, matching exactly one manager-challenge record in the play-by-play; registry MI == 'Manager challenge: Hit by pitch' and the play's own eventType == 'hit_by_pitch'."
+  },
+  "gameData": {
+    "gamePk": 824474,
+    "gameData": {
+      "datetime": {"officialDate": "2026-08-20"},
+      "status": {"detailedState": "Final", "statusCode": "F"},
+      "teams": {
+        "away": {"id": 138, "name": "St. Louis Cardinals", "abbreviation": "STL"},
+        "home": {"id": 113, "name": "Cincinnati Reds", "abbreviation": "CIN"}
+      },
+      "review": {
+        "hasChallenges": true,
+        "away": {"used": 0, "remaining": 1},
+        "home": {"used": 1, "remaining": 0}
+      },
+      "absChallenges": {
+        "hasChallenges": true,
+        "away": {"usedSuccessful": 0, "usedFailed": 2, "remaining": 0},
+        "home": {"usedSuccessful": 2, "usedFailed": 1, "remaining": 1}
+      }
+    }
+  },
+  "reviewPlayWithProgress": {
+    "about": {"atBatIndex": 65},
+    "reviewDetails": {"isOverturned": false, "inProgress": false, "reviewType": "MI", "challengeTeamId": 113},
+    "atBatIndex": 65
+  },
+  "reviewPlayWithResult": {
+    "result": {"eventType": "hit_by_pitch"},
+    "about": {"atBatIndex": 65},
+    "reviewDetails": {"isOverturned": false, "reviewType": "MI", "challengeTeamId": 113},
+    "atBatIndex": 65
+  }
+}
