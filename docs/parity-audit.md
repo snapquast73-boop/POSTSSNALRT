@@ -17,8 +17,8 @@ Session `5950e951` · 2026-11-21 (UTC) · task T9 on [COORDINATION.md](../COORDI
 Reproduce everything here with:
 
 ```bash
-node tools/game-page-test.mjs                                    # 87 checks, no deps, no network
-JSDOM_MODULE=/tmp/qa/node_modules/jsdom node tools/game-page-dom-test.mjs   # 29 checks, real game.html
+node tools/game-page-test.mjs                                    # 89 checks, no deps, no network
+JSDOM_MODULE=/tmp/qa/node_modules/jsdom node tools/game-page-dom-test.mjs   # 32 checks, real game.html
 node tools/review-test.mjs && node tools/scoring-change-test.mjs && \
 node tools/official-scoring-test.mjs && node tools/reviews-feed-test.mjs && \
 node tools/replay-feed-render-test.mjs                           # 105 checks, pre-existing suites
@@ -106,7 +106,8 @@ Scope check before editing: PR #9 (session `a35ded9a`) is the only other open cl
 | G-03 | `Reviews.getReviewCounters()` was dead code: the official challenge counters (C-04, V-07) were displayed on no page | Sourced counter table on the Challenges & Reviews tab; absent counters render blank, never 0 | `game-page-test.mjs` counter section (10 checks); DOM "every counter row links its official MLB source" |
 | G-04 | `Api.getGameStatus()` existed for exactly this purpose (README: review-status codes come "from `GET /api/v1/gameStatus`") but **nothing in the repo called it**, so review codes never resolved to MLB's own wording | `loadReviewStatusRegistry()` fetches it once per page before the first paint; `registryLabelFor()` supplies the wording | DOM "MLB's own wording is shown for MJ" / "for MI" |
 | G-05 | Review cards had no source link although every other table on the page does, and `qa/pages-acceptance.mjs` asserts a source link on linescore/boxscore/props rows | Every card and every counter row links that game's official live feed | DOM "every card links its official MLB source" |
-| G-06 | `.badge.risk` and `.badge.under-review` (style.css lines 460–461) were emitted by nothing: the only `badgeClass` values any module produced were `challenge`, `review`, `boundary`, `abs`, `pending`, `scoring` (`under-review` existed solely as a feed *tab key*). Dead badge styles marking a lost feature | Ruling chips use them (`overturned` → green `.abs`, `in-progress` → amber `.under-review`, `stands` → blue `.review`, no ruling → `.risk`) | `game-page-test.mjs` "every ruling badge class emitted by game.js exists in style.css" |
+| G-06 | `.badge.risk` and `.badge.under-review` (style.css lines 460–461) were emitted by nothing: the only `badgeClass` values any module produced were `challenge`, `review`, `boundary`, `abs`, `pending`, `scoring` (`under-review` existed solely as a feed *tab key*). Dead badge styles marking a lost feature | "In progress" now uses the shipped `.badge.under-review`; two new rulings needed their own classes, so `.badge.overturned` (green) and `.badge.stands` (blue) were added to `style.css` reusing the existing colour variables. "No ruling in payload" is rendered as words, not a badge | `game-page-test.mjs` "every ruling badge class emitted by game.js exists in style.css" |
+| G-09 | **Near-miss found during the second pass:** the first implementation styled an overturned ABS call with `.badge.abs`. `qa/pages-acceptance.mjs` asserts `#reviews-wrap .badge.abs` count == the number of official `MJ` records in the payload, so a ruling chip reusing the type badge would have doubled that count and failed the browser acceptance run on every deploy | Ruling chips use their own classes and a test now asserts they never reuse any review-**type** class; the DOM suite additionally asserts the harness invariant itself (exactly one `.badge.abs` per official record) | `game-page-test.mjs` "ruling chips never reuse a review-TYPE badge class"; `game-page-dom-test.mjs` "browser-harness invariant" |
 | G-07 | `renderReviews` wrote to `#live-review-banner-wrap` with no null guard, and `load()` had no request-generation guard although it polls every 15 s against a 20 s client timeout — a slow response could overwrite a newer one | Null guard + `state.request` generation token, mirroring the guard `reviews-feed.js` already had | — (race; guarded by inspection + the DOM boot check) |
 | G-08 | `game.js` registered `DOMContentLoaded` unguarded, unlike every other module in the repo, so it could not be `require`d in Node for testing | `if (typeof document !== 'undefined')` guard, matching `api.js`/`ui.js`/`reviews.js`/`feed-log.js`/`reviews-feed.js` | both new test files load the module in Node |
 
@@ -141,8 +142,8 @@ Logged here instead of being made, per the coordination rules. Owner of `assets/
 
 | Check | Command | Result |
 | --- | --- | --- |
-| New pure-reader suite (87 assertions against verbatim official captures) | `node tools/game-page-test.mjs` | **87 passed, 0 failed** |
-| New DOM suite — the real `game.html` booted in jsdom, three scenarios (2026 World Series game, manager-challenge game, registry outage) | `JSDOM_MODULE=/tmp/qa/node_modules/jsdom node tools/game-page-dom-test.mjs` | **29 passed, 0 failed**, and **0 jsdom errors / 0 console warnings** in the two healthy scenarios |
+| New pure-reader suite (89 assertions against verbatim official captures) | `node tools/game-page-test.mjs` | **89 passed, 0 failed** |
+| New DOM suite — the real `game.html` booted in jsdom, three scenarios (2026 World Series game, manager-challenge game, registry outage) | `JSDOM_MODULE=/tmp/qa/node_modules/jsdom node tools/game-page-dom-test.mjs` | **32 passed, 0 failed**, and **0 jsdom errors / 0 console warnings** in the two healthy scenarios |
 | Pre-existing fixture suites | `review-test` 25, `scoring-change-test` 8, `official-scoring-test` 7, `reviews-feed-test` 25, `replay-feed-render-test` 40 | **105 passed, 0 failed** (unchanged by this work) |
 | Alert sound | `node tools/render-alert-sound.mjs && node tools/alert-sound-independent-check.mjs` | **8 passed, 0 failed** |
 | Syntax | `node --check` on every `assets/js/*.js` and `server.mjs` | clean |

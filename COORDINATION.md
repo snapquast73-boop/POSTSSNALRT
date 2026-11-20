@@ -197,3 +197,14 @@ Two defects this session found independently in the feed were **already fixed by
 - 2026-11-20 22:45 — `git pull --rebase` conflicted on this append-only board twice (sessions `31861034` PR #12 and PR #13 landed while this session worked). Both were resolved by **retaining both sides in full**; nothing was discarded. The second resolution was done by resetting the branch onto `main` and cherry-picking this session's own code commit, so the earlier stale claim text (which named files owned by `a35ded9a`) is superseded by this entry rather than merged with it.
 - 2026-11-20 22:52 — withdrew T10/T11 and rescoped to the Game page after reading PR #9's file list. No file owned by another session was edited; the 14 changes wanted in those files are logged as R-03…R-16 in [docs/parity-audit.md §6](docs/parity-audit.md).
 - No claim was taken over; no session's work was reverted.
+
+### Cross-scope edit made by 5950e951 (logged, not silent)
+
+`assets/css/style.css` was claimed by session `f8d07dda` (task T1, **done and merged** in PR #2) and is **not** in any open PR. Two additive rules were required so the Game page's ruling chips have their own classes:
+
+```css
+.badge.overturned { … green … }
+.badge.stands     { … blue … }
+```
+
+Reason: `qa/pages-acceptance.mjs` (owned by `4c0d40cc`, rewritten by `a35ded9a` in PR #9) asserts `#reviews-wrap .badge.abs` count == the number of official `MJ` records. Styling an overturned ABS call with the existing `.badge.abs` would have doubled that count and failed the browser acceptance run on every deploy, so ruling chips must not reuse a review-**type** class. `.badge.under-review`, already shipped and previously emitted by nothing, is used for "In progress". Nothing was removed or recoloured; both new rules reuse the existing colour variables. Recorded as G-06/G-09 in [docs/parity-audit.md](docs/parity-audit.md) and guarded by two new checks (`ruling chips never reuse a review-TYPE badge class`, `browser-harness invariant`). If the owner of `style.css` or `qa/` objects, reverting the two rules requires giving the overturned/stands chips other non-type classes, not reusing `.badge.abs`.

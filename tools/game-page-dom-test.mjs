@@ -187,6 +187,14 @@ section('game 849799 — 2026 World Series, two official ABS pitch challenges');
     txt.includes('Official challenge counters') && txt.includes('ABS challenges retained (successful)'));
   check('the tab badge counts both records', doc.getElementById('reviews-tab-count').textContent === '2',
     doc.getElementById('reviews-tab-count').textContent);
+  /* qa/pages-acceptance.mjs asserts exactly this equality against the number of
+   * official MJ records, so a ruling chip must never reuse the type badge. */
+  check('exactly one .badge.abs per official MJ record (browser-harness invariant)',
+    doc.querySelectorAll('#reviews-wrap .badge.abs').length === 2,
+    doc.querySelectorAll('#reviews-wrap .badge.abs').length);
+  check('the two ruling chips use .badge.overturned, not .badge.abs',
+    doc.querySelectorAll('#reviews-wrap .badge.overturned').length === 2,
+    doc.querySelectorAll('#reviews-wrap .badge.overturned').length);
   const cards = doc.querySelectorAll('#reviews-wrap .review-card');
   check('two review cards rendered', cards.length === 2, cards.length);
   const cardLinks = [...doc.querySelectorAll('#reviews-wrap .review-card a')].map((a) => a.getAttribute('href'));
@@ -214,6 +222,10 @@ section('game 824474 — manager challenge MI on a hit_by_pitch play');
   check('MLB\'s own wording is shown for MI', txt.includes('Manager challenge: Hit by pitch'), txt.slice(0, 300));
   check('the ruling reads "Call stands (not overturned)"', txt.includes('Call stands (not overturned)'));
   check('the challenging club CIN is shown for challengeTeamId 113', txt.includes('Challenged by: CIN'));
+  check('the ruling chip uses .badge.stands and the type chip stays .badge.challenge',
+    doc.querySelectorAll('#reviews-wrap .badge.stands').length === 1 &&
+    doc.querySelectorAll('#reviews-wrap .badge.challenge').length === 1 &&
+    doc.querySelectorAll('#reviews-wrap .badge.abs').length === 0);
   check('manager counters are shown verbatim',
     txt.includes('Manager challenges used') && txt.includes('Manager challenges remaining'));
   check('ABS counters are shown verbatim', txt.includes('ABS challenges lost (failed)'));

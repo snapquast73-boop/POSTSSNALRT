@@ -251,12 +251,21 @@
     };
   }
 
-  /** Badge class for a ruling chip; reuses classes already in style.css. */
+  /**
+   * Badge class for a ruling chip.
+   *
+   * Deliberately NOT `.badge.abs` for an overturned ABS call: the browser
+   * acceptance harness counts `#reviews-wrap .badge.abs` and compares it with
+   * the number of official `MJ` records in the payload
+   * (qa/pages-acceptance.mjs), so reusing the type badge for the ruling would
+   * double that count. Rulings get their own classes; `.badge.under-review`
+   * already existed in style.css for exactly this "still open" state.
+   */
   function rulingBadgeClass(ruling) {
-    if (!ruling) return 'risk';
-    if (ruling.key === 'overturned') return 'abs';        // green: call changed
-    if (ruling.key === 'in-progress') return 'under-review'; // amber: still open
-    return 'review';                                      // blue: call stands
+    if (!ruling) return null;
+    if (ruling.key === 'overturned') return 'overturned';
+    if (ruling.key === 'in-progress') return 'under-review';
+    return 'stands';
   }
 
   function gamePkFromUrl() {
@@ -475,8 +484,9 @@
       card.appendChild(head);
 
       if (m.ruling) {
+        var rulingClass = rulingBadgeClass(m.ruling);
         var ruling = document.createElement('span');
-        ruling.className = 'badge ' + rulingBadgeClass(m.ruling);
+        ruling.className = 'badge' + (rulingClass ? ' ' + rulingClass : '');
         ruling.textContent = m.ruling.label;
         card.appendChild(ruling);
       } else if (m.typeKey !== 'pending') {

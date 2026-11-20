@@ -224,14 +224,21 @@ check('game.html loads reviews.js before game.js',
   gameHtml.indexOf('assets/js/reviews.js') < gameHtml.indexOf('assets/js/game.js'));
 check('game.html loads api.js before game.js',
   gameHtml.indexOf('assets/js/api.js') < gameHtml.indexOf('assets/js/game.js'));
-['.badge', '.badge.abs', '.badge.review', '.badge.risk', '.badge.under-review',
+['.badge', '.badge.abs', '.badge.overturned', '.badge.stands', '.badge.under-review',
  '.review-card', '.score-table', '.props-note', '.live-review-banner']
   .forEach(sel => check('style.css defines ' + sel, css.includes(sel)));
 check('every ruling badge class emitted by game.js exists in style.css',
-  ['abs', 'under-review', 'review', 'risk'].every(c =>
-    css.includes('.badge.' + c) && Game.rulingBadgeClass(
-      c === 'abs' ? { key: 'overturned' } : c === 'under-review' ? { key: 'in-progress' } :
-      c === 'review' ? { key: 'stands' } : null) === c));
+  [['overturned', 'overturned'], ['in-progress', 'under-review'], ['stands', 'stands']]
+    .every(([key, cls]) => Game.rulingBadgeClass({ key }) === cls && css.includes('.badge.' + cls)));
+check('no ruling -> no badge class (the row states it in words instead)', Game.rulingBadgeClass(null) === null);
+/* qa/pages-acceptance.mjs counts `#reviews-wrap .badge.abs` and compares it with
+ * the number of official MJ records in the payload, so a ruling chip that reused
+ * the type badge would double that count and fail the browser acceptance run. */
+check('ruling chips never reuse a review-TYPE badge class',
+  ['overturned', 'in-progress', 'stands'].every(k =>
+    ['abs', 'challenge', 'review', 'boundary', 'pending', 'scoring']
+      .indexOf(Game.rulingBadgeClass({ key: k })) === -1),
+  ['overturned', 'in-progress', 'stands'].map(k => Game.rulingBadgeClass({ key: k })));
 
 section('registry failure path (loud, not silent)');
 check('loadReviewStatusRegistry is exported', typeof Game.loadReviewStatusRegistry === 'function');
