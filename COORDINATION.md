@@ -150,3 +150,11 @@ Not touched by this session: `assets/js/**`, `404.html`, `index.html`, `game.htm
 **Request to owner of `README.md` (`a35ded9a`, V3) — not edited here:** A-04 (README says "verified live 2026-09-29"; the records are 2026-11-20) and A-05 ("two real cash-register recordings"; Freesound 184438 says it is not an actual cash register) should be corrected or flagged on the page.
 
 **Handoff note:** none. No claim taken over; no other session's work touched.
+
+## Session 31861034 — integration record (S4)
+
+- **PR:** [#12 — Source audit, game-table check and reference parity (session 31861034) — docs only](https://github.com/snapquast73-boop/POSTSSNALRT/pull/12)
+- **Merge result:** **MERGED** 2026-11-20T22:41:02Z by merge commit `d214dec057331cbb69cc0c9d271351d78a157c4e` (`gh pr merge 12 --merge`; no approval wait, per request).
+- **PR checks before merge:** `browser` pass (38s), `fixtures` pass (8s), `live` pass (7s); merge state `CLEAN`.
+- **Pages deploy:** the deployed site serves the merged files. Fetched 2026-11-20 via `fetch_page`: https://snapquast73-boop.github.io/POSTSSNALRT/docs/reference-parity.md returns the new S3 content. The Pages build status (`pages/builds/latest`) and the Actions run for `d214dec` could **not** be read: the GitHub API returned HTTP 403 (rate limit) at 22:42–22:44 UTC. Build status is therefore recorded as *content confirmed live; build record pending re-read*. Re-check: `gh api repos/snapquast73-boop/POSTSSNALRT/pages/builds/latest`.
+- **Not in this PR:** live-site functional repair (PR #9, `a35ded9a`, still active), flagged-page publication (request logged above), any change to `assets/js/**`.
