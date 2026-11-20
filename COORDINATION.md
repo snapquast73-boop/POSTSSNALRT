@@ -34,6 +34,16 @@ sessions were active; all scopes were claimed sequentially by f8d07dda).
 
 ## Verification log
 
+- 2026-11-20 — MLB official game-status registry [`/api/v1/gameStatus`](https://statsapi.mlb.com/api/v1/gameStatus) fetched via `fetch_page` (all 4 chunks): code `MJ` = "Player challenge: Pitch Result" (player pitch challenge — the ABS pitch challenge, per MLB's own ABS pages: [abs-challenge-system-mlb-2026](https://www.mlb.com/news/abs-challenge-system-mlb-2026), [visual guide to how ABS works](https://www.mlb.com/interactive/mlb-abs-system-explainer)); registry distinguishes replay `statusCode` from `abstractGameCode` (MJ: statusCode `MJ`, abstractGameCode `L`). Cross-check vs `assets/js/reviews.js`: site manager codes (21) + `MS` (boundary) + `MJ` (abs) cover all 23 MLB M codes; site crew-chief codes (22) + `NS` (boundary) cover all 23 MLB N codes. F-03 verified.
+- 2026-11-20 — MLB ABS explainer link [abs-challenge-system-mlb-2026](https://www.mlb.com/news/abs-challenge-system-mlb-2026) now redirects (MLB restructure) to the unrelated page [padres-remaining-needs-for-2026-2027-offseason](https://www.mlb.com/news/padres-remaining-needs-for-2026-2027-offseason) — verified via `fetch_page`; stale link flagged as F-08 (see flagged-for-review.html). Substitute official source for ABS rules: [visual guide to how ABS works](https://www.mlb.com/interactive/mlb-abs-system-explainer) and [ABS Challenge System explainer](https://www.mlb.com/interactive/mlb-abs-system-explainer) (from MLB, verified accessible).
+- 2026-11-20 — MLB official event-type registry [`/api/v1/eventTypes`](https://statsapi.mlb.com/api/v1/eventTypes): `os_ruling_pending_primary` / `os_ruling_pending_prior` present with description "Official Scorer Ruling Pending" (matches `Reviews.PENDING_EVENT_TYPES`).
+- 2026-11-20 — MLB official team list [`/api/v1/teams?sportId=1`](https://statsapi.mlb.com/api/v1/teams?sportId=1) fetched (all 3 chunks); team IDs/names used by the UI (Tigers 116 — Detroit Tigers, Rays 139 — Tampa Bay Rays, both verified in the game-822974 feed data above).
+- 2026-11-20 — MLB official schedule [`/api/v1/schedule?sportId=1&date=2024-10-30`](https://statsapi.mlb.com/api/v1/schedule?sportId=1&date=2024-10-30): game 775296 (Dodgers 7, Yankees 6, Final) — matches SOURCE-PROVENANCE.md. [`?date=2026-11-20`](https://statsapi.mlb.com/api/v1/schedule?sportId=1&date=2026-11-20): empty (no games) — consistent with MLB; [`?sportId=1&startDate=2026-10-20&endDate=2026-11-05`](https://statsapi.mlb.com/api/v1/schedule?sportId=1&startDate=2026-10-20&endDate=2026-11-05): games through 2026-10-28 (World Series).
+- 2026-11-20 — Game 822974 live feed [`/api/v1.1/game/822974/feed/live`](https://statsapi.mlb.com/api/v1.1/game/822974/feed/live) fetched (Tigers vs Rays, Final, 2026-06-01; `reviewDetails` with `reviewType: "MJ"` present — site scans `play.reviewDetails` and `playEvents[].reviewDetails`).
+- 2026-11-20 — Server smoke re-run (PORT 8000): `/api/health` 200, `/` 200, `assets/css/style.css` 200, `assets/js/*.js` 200, `/api/feed-log` 200, unknown path 404.
+- 2026-11-20 — `python3 qa/check-links.py`: **0 unresolved local references** (re-run).
+- 2026-11-20 — `node --check`: all JS/MJS OK (re-run: `assets/js/*.js`, `server.mjs`, `tools/*.mjs`).
+- 2026-11-20 — Fixture suite re-run: **120 passed, 0 failed** (25+8+7+25+40+7+8); alert-sound tools 7/7 + 8/8. Live smoke fails from bash (TLS blocked) as expected (F-02); CI (`.github/workflows/smoke.yml`) runs it on push/PR + nightly. F-02 now verified live via `fetch_page` (see flagged-for-review.html).
 - 2026-11-20 — Official glossary/scoring pages fetched live via `fetch_page`: [Replay Review](https://www.mlb.com/glossary/rules/replay-review), [Manager Challenge](https://www.mlb.com/glossary/rules/manager-challenge), [Scoring Changes](https://www.mlb.com/official-information/scoring-changes). `docs.statsapi.mlb.com` is partner-gated (Okta login) — no public reference; endpoints verified via payload contract + community endpoint maps only, flagged F-02.
 - 2026-11-20 — `node --check`: all JS/MJS OK (one comment syntax error in `reviews.js` found & fixed).
 - 2026-11-20 — Fixture suite: **120 passed, 0 failed** (25+8+7+25+40+7+8). Live smoke fails in sandbox as expected (F-02), passes in CI.
@@ -52,13 +62,19 @@ sessions were active; all scopes were claimed sequentially by f8d07dda).
 
 ## Flagged items (needs review — published, non-blocking)
 
-All items F-01…F-07 are published with official source links on
+All items F-01…F-08 are published with official source links on
 [flagged-for-review.html](flagged-for-review.html). Summary: F-01 missing
-assets rebuilt from contracts; F-02 StatsAPI unverifiable from sandbox
-(verify in browser/CI); F-03 review-code meanings unverified; F-04 props
-forecast not invented (observed data only); F-05 no recording committed
-(licence slot documented); F-06 original docs/tools check counts not
-reproducible (rebuilt honestly); F-07 upstream parity unverifiable (404).
+assets rebuilt from contracts; F-02 StatsAPI unverifiable from sandbox —
+since verified live via `fetch_page` (gameStatus, eventTypes, teams,
+schedules, game 822974 feed — see F-02 row); F-03 review-code meanings
+verified against MLB's official game-status registry (MJ = Player
+challenge: Pitch Result; M/N code lists cross-checked — see F-03 row);
+F-04 props forecast not invented (observed data only); F-05 no recording
+committed (licence slot documented); F-06 original docs/tools check counts
+not reproducible (rebuilt honestly); F-07 upstream parity unverifiable
+(404); F-08 ABS explainer link stale — redirects to an unrelated page;
+substitute verified source is the visual guide at
+https://www.mlb.com/interactive/mlb-abs-system-explainer.
 
 ## Cross-session verification and handoff
 
