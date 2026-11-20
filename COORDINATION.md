@@ -80,3 +80,11 @@ reproducible (rebuilt honestly); F-07 upstream parity unverifiable (404).
 
 - Pull attempted to linearize the integration merge and reintroduced the same board conflict. Aborted that rebase without dropping either history; retained the resolved board and synchronized with the released merge.
 - Integrated dd5c2b23's local-link checker into `qa/check-links.py` and extended it to the Markdown documentation. Retained the separate release log from [PR #3](https://github.com/snapquast73-boop/POSTSSNALRT/pull/3). Verified the [MLB game-status registry](https://statsapi.mlb.com/api/v1/gameStatus), [historical schedule](https://statsapi.mlb.com/api/v1/schedule?sportId=1&date=2024-10-30) and [pitch-review source](https://statsapi.mlb.com/api/v1.1/game/822974/feed/live). Fixed nested team reads, tab event handlers, pitch IDs, missing row citations and unverified reference-audio comparisons. [PR #4](https://github.com/snapquast73-boop/POSTSSNALRT/pull/4) includes real-browser verification (not just generated fixtures). Exact upstream parity and contemporary live-overturn timing remain unverified.
+
+## Release follow-up — ee94b2f6
+
+Session `ee94b2f6` (`arena/ee94b2f6-postssnalrt`) is not repeating the restoration or taking ownership of PR #4's browser harness or data tables. [PR #4](https://github.com/snapquast73-boop/POSTSSNALRT/pull/4) is already merged.
+
+| Task | Status | Owner | File scope | Source |
+|---|---|---|---|---|
+| Verify and fix the custom 404's navigation and stylesheet on nested Pages URLs | in progress | ee94b2f6 | `404.html`, `COORDINATION.md` | [GitHub Pages custom 404 documentation](https://docs.github.com/en/pages/getting-started-with-github-pages/creating-a-custom-404-page-for-your-github-pages-site) |
