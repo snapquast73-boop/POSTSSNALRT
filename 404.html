@@ -3,6 +3,12 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <!-- Pages serves this document at the missing URL, including nested paths. -->
+  <base href="/POSTSSNALRT/">
+  <script>
+    // The optional local server mounts the same site at the origin root.
+    if (!location.pathname.startsWith('/POSTSSNALRT/')) document.querySelector('base').href = '/';
+  </script>
   <title>404 — MLB Live PBP</title>
   <link rel="stylesheet" href="assets/css/style.css">
 </head>
