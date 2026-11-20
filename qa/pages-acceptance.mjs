@@ -84,6 +84,11 @@ try {
   const link = page.locator(`#game-list a[href*="gamePk=${game.gamePk}"]`).first();
   await link.waitFor();
   for (const side of ['away', 'home']) assert((await link.innerText()).includes(game.teams[side].team.name));
+  // Capture the card's target now: the empty-slate block below navigates away,
+  // which invalidates locators bound to this page.
+  const gameHref = await link.getAttribute('href');
+  assert.equal(new URL(gameHref, base).pathname, new URL('game.html', base).pathname,
+    `card link does not point at game.html: ${gameHref}`);
 
   // Official abbreviation on every card (schedule payload has none; the page
   // must read /api/v1/teams instead of leaving the cell blank).
@@ -125,8 +130,7 @@ try {
 
   /* ---------------------------------------------------------------- game */
   console.log('→ game page');
-  const gamePage = new URL(await link.getAttribute('href'), page.url());
-  assert.equal(gamePage.pathname, new URL('game.html', base).pathname);
+  const gamePage = new URL(gameHref, base);
   const [feedRes] = await Promise.all([
     page.waitForResponse((res) => new URL(res.url()).origin === stats && new URL(res.url()).pathname === feedUrl.pathname),
     open(gamePage.href),
