@@ -75,4 +75,19 @@ jobs:
             base='${{ github.event.inputs.base_url || 'https://snapquast73-boop.github.io/POSTSSNALRT/' }}'
           fi
           echo "testing $base"
-          node qa/pages-acceptance.mjs "$base"
+          set -o pipefail
+          if node qa/pages-acceptance.mjs "$base" 2>&1 | tee "$RUNNER_TEMP/acceptance.log"; then
+            exit 0
+          fi
+          # Surface the failure in the check run itself: the raw job log is not
+          # always retrievable, but annotations are exposed by the Checks API.
+          msg=$(tail -c 7000 "$RUNNER_TEMP/acceptance.log" | sed 's/%/%25/g; s/\r//g' | awk '{printf "%s%%0A", $0}')
+          echo "::error title=Pages acceptance failed::$msg"
+          exit 1
+      - name: Keep the acceptance log
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: acceptance-log
+          path: ${{ runner.temp }}/acceptance.log
+          if-no-files-found: ignore

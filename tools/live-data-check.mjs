@@ -167,7 +167,10 @@ for (const date of DATES) {
 
     await check(`${date} game ${pk}: pitch challenges (MJ/NJ) classify as ABS and boundary codes (MS/NS) as boundary`, () => {
       for (const r of extracted.reviews) {
-        if (r.code === 'MJ' || r.code === 'NJ') assert(r.typeKey === 'abs', `${r.code} classified ${r.typeKey}`);
+        // Registry wording: MJ = "Player challenge: Pitch Result" (the ABS
+        // challenge), NJ = "Umpire Challenge: Pitch Result" (umpire-initiated).
+        if (r.code === 'MJ') assert(r.typeKey === 'abs', `MJ classified ${r.typeKey}`);
+        if (r.code === 'NJ') assert(r.typeKey === 'abs' || r.typeKey === 'review', `NJ classified ${r.typeKey}`);
         if (r.code === 'MS' || r.code === 'NS') assert(r.typeKey === 'boundary', `${r.code} classified ${r.typeKey}`);
         if (String(r.code).charAt(0) === 'M') assert(r.typeKey === 'challenge' || r.typeKey === 'boundary' || r.typeKey === 'abs',
           `manager code ${r.code} classified ${r.typeKey}`);

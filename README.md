@@ -52,6 +52,8 @@ Static site (GitHub Pages) that polls the **official MLB StatsAPI** and surfaces
 
 Everything above is **observed from official payloads only** — nothing is predicted, inferred from score deltas, or zero-filled when a counter is absent. Irregularities (e.g. a used-challenge counter moving backwards) are flagged on the affected rows for review, never corrected.
 
+**Empty days are real data.** MLB plays no games on many dates (the whole 2026-11 offseason, for one). When the default "today" view gets an empty slate from `GET /api/v1/schedule`, the scoreboard and the replay feed look up the most recent date the official schedule actually has (`GET /api/v1/schedule?sportId=1&startDate=…&endDate=…`), open that slate once, and say so in a banner. Explicit date navigation is unchanged: pick a date and you get exactly that date, empty or not. This fallback is an addition of this repair, not a recovered upstream behaviour — see [`flagged-for-review.html`](flagged-for-review.html) F-08.
+
 Pages: **Scoreboard** (`index.html`), **Game** (`game.html?gamePk=…` — live PBP, probability props, review tracker), **Replay Feed** (`reviews.html` — the all-games chat-style alert feed with sound + desktop notifications), **Sound Lab** (`sound-lab.html` — audition, measure and install the alert sound).
 
 ## Intentional differences vs. MLB-Live-PBP
@@ -85,8 +87,12 @@ node tools/replay-feed-render-test.mjs
 node tools/review-test.mjs
 node tools/scoring-change-test.mjs
 node tools/official-scoring-test.mjs
-# …the full list is in docs/workflows/smoke.yml; tools/smoke-test.mjs is the
-# live-API check run nightly by CI (needs network access to statsapi.mlb.com)
+# …the full list is in docs/workflows/smoke.yml; tools/smoke-test.mjs and
+# tools/live-data-check.mjs are the live-API checks run by CI (they need
+# network access to statsapi.mlb.com; they fail loudly without it)
+
+# real-browser acceptance against a site root (needs Playwright + Chromium)
+node qa/pages-acceptance.mjs https://snapquast73-boop.github.io/POSTSSNALRT/
 ```
 
 ## Repo layout
@@ -102,14 +108,16 @@ server.mjs            optional local/dev server + feed-log sync  .github/workflo
 
 ## Work still needed (next session) & limitations
 
-1. **Live-API verification runs in CI, not here.** `tools/smoke-test.mjs` (live checks against `statsapi.mlb.com`) could not run inside this build sandbox — outbound TLS to `statsapi.mlb.com` is blocked there (flagged, not skipped silently; the same limitation was recorded in `docs/scoring-changes.md`). All fixture-based tests pass. The live smoke is now wired into CI (`.github/workflows/smoke.yml` — every push/PR + nightly) where the network is open; treat any smoke failure as an irregularity for review.
+1. **Live-API verification runs in CI, not in the build sandbox.** Outbound TLS to `statsapi.mlb.com` is blocked from the sandbox (flagged, not skipped silently). CI runs two live checks on every push/PR plus nightly (`.github/workflows/smoke.yml`): `tools/smoke-test.mjs` (host/endpoint reachability) and `tools/live-data-check.mjs` (our reader vs official payloads and registries — review-record counts, every `reviewType` code against `GET /api/v1/gameStatus`, ABS/boundary classification, challenge counters read verbatim, runs-at-risk parity, and the empty-slate fallback). The deployed site is additionally exercised in a real browser after every Pages deploy (`.github/workflows/pages-acceptance.yml`). Treat any failure as an irregularity for review.
 2. **Alert volume is the trade-off we accepted.** Including ABS means roughly 4+ extra cha-chings per game (MLB's own 2025 spring data: avg 4.1 challenges/game). Suggested upgrade: per-category sound toggles and/or a short coalescing window so a burst of ABS challenges raises one alert. Currently one alert per poll max + 2.5s cooldown already bounds it.
 3. **Desktop notifications only cover run-at-risk events** (upstream design). Extending them to all alertable events (with batching, already present for run-risk) is the natural next feature.
 4. **First-load audio autoplay.** Browsers block `AudioContext` until the first user interaction, so a one-time first-gesture primer (`pointerdown`/`keydown`/`touchstart`) creates the context and starts loading the recording; the cha-ching is silent until one click either way (desktop notifications are not affected).
 5. **No audio asset is committed, on purpose.** The cha-ching the request pointed at is a paid Bandcamp release and cannot be copied; the two legally usable recordings found (Pixabay 125042, Pixabay 88639 — the second CC0 underneath) sit behind a JavaScript CDN that a build environment cannot fetch. So `assets/audio/` is a documented slot: install a recording from [`sound-lab.html`](sound-lab.html) or by hand, record its licence in `assets/audio/LICENCE.md`, and commit it. Until then the synthesized fallback plays, and it is measured against real recordings by `tools/render-alert-sound.mjs` and `tools/alert-sound-independent-check.mjs` (rebuilt check suites — see `docs/verification-report.md` and `flagged-for-review.html` F-06) rather than left unverified.
 6. **Feed persistence is per-browser** (`localStorage`, newest 7 dates). The optional `server.mjs` adds multi-browser sync; on static GitHub Pages, cross-device history is not shared.
 7. **Historical verification docs** (`docs/verification-report.md` etc.) describe the upstream MLB-Live-PBP baseline; the ABS-inclusion delta is recorded in `docs/abs-inclusion.md` and noted at the top of each historical doc.
-8. **Upstream API risk.** The MLB StatsAPI is public but unofficial for third-party use; field shapes and rate limits can change. The test suite is built to fail loudly on drift (see `docs/api-compliance.md`).
+8. **Upstream API risk.** The MLB StatsAPI is public but unofficial for third-party use; field shapes and rate limits can change. The test suite is built to fail loudly on drift (see `docs/api-compliance.md` and `tools/live-data-check.mjs`).
+9. **Offseason default view.** When the official slate for today is empty, the site opens the most recent slate once and says so (see "Empty days are real data" above). It is an addition of this repair, flagged F-08, and easy to remove if you would rather see the empty state.
+10. **Runs at Risk is attribution, not prediction.** A review is flagged only when the official payload credits a scoring movement to the reviewed event; a review that has already been resolved on such a play still shows the flag, because the payload does not say what replay removed.
 
 ## License
 

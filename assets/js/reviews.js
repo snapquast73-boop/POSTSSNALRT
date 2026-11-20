@@ -236,6 +236,20 @@
    * event under review (README.md / reviews.html footer). Defensive field
    * checks; returns false when the shape is unrecognised (flagged F-03).
    */
+  /**
+   * Official payloads deliver `reviewDetails` as an OBJECT
+   * (`{isOverturned, reviewType, challengeTeamId}`) on plays and on
+   * playEvents[]; some historical feeds use an array. Treat either non-empty
+   * shape as present — an `Array.isArray`-only test silently missed every
+   * object-shaped record (found 2026-11-20 against
+   * https://statsapi.mlb.com/api/v1.1/game/822974/feed/live).
+   */
+  function hasReviewDetails(value) {
+    if (!value) return false;
+    if (Array.isArray(value)) return value.length > 0;
+    return typeof value === 'object';
+  }
+
   function runsAtRisk(play, review) {
     if (!play) return false;
     if (review) {
@@ -244,11 +258,11 @@
       return (play.runners || []).some(r => r.details?.isScoringEvent === true &&
         (review.eventIndex == null ? review.typeKey !== 'abs' : r.details.playIndex === review.eventIndex));
     }
-    var hasReview = Array.isArray(play.reviewDetails) && play.reviewDetails.length > 0;
+    var hasReview = hasReviewDetails(play.reviewDetails);
     if (!hasReview) {
       var events = play.playEvents || [];
       for (var i = 0; i < events.length; i++) {
-        if (events[i] && Array.isArray(events[i].reviewDetails) && events[i].reviewDetails.length) {
+        if (events[i] && hasReviewDetails(events[i].reviewDetails)) {
           hasReview = true;
           break;
         }
@@ -347,6 +361,7 @@
     extractReviewsFromFeed: extractReviewsFromFeed,
     isPendingRulingPlay: isPendingRulingPlay,
     isUnderReviewStatus: isUnderReviewStatus,
+    hasReviewDetails: hasReviewDetails,
     getReviewCounters: getReviewCounters,
     runsAtRisk: runsAtRisk,
     snapshotPlay: snapshotPlay,

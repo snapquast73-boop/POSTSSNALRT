@@ -75,6 +75,7 @@ try {
   const assertClean = (where) => assert.deepEqual(failures, [], `page errors on ${where}: ${failures.join(' | ')}`);
 
   /* ---------------------------------------------------------- scoreboard */
+  console.log('→ scoreboard');
   await open('index.html');
   await page.locator('#date-picker').fill(GAME_DATE);
   const link = page.locator(`#game-list a[href*="gamePk=${game.gamePk}"]`).first();
@@ -103,6 +104,7 @@ try {
 
   /* ------------------------------------- empty-slate fallback (offseason) */
   if (!todayGames.length) {
+    console.log('→ empty-slate fallback');
     await open('index.html');
     const banner = page.locator('#banner.show');
     await banner.waitFor({ timeout: 30000 });
@@ -118,6 +120,7 @@ try {
   }
 
   /* ---------------------------------------------------------------- game */
+  console.log('→ game page');
   const gamePage = new URL(await link.getAttribute('href'), page.url());
   assert.equal(gamePage.pathname, new URL('game.html', base).pathname);
   const [feedRes] = await Promise.all([
@@ -146,6 +149,7 @@ try {
   assertClean('game page');
 
   /* --------------------------------------------------------------- feed */
+  console.log('→ replay feed');
   await open('reviews.html');
   await page.locator('#date-picker').fill(GAME_DATE);
   const listed = page.locator('.feed-item')
@@ -163,6 +167,7 @@ try {
   assertClean('replay feed');
 
   /* ---------------------------------------------------------- sound lab */
+  console.log('→ sound lab');
   await open('sound-lab.html');
   await page.waitForFunction(() => typeof window.ReplayFeed?.playAlertSound === 'function');
   const spec = await page.evaluate(() => window.ReplayFeed.alertSoundSpec);
@@ -171,6 +176,7 @@ try {
   assertClean('sound lab');
 
   /* ------------------------------------------------ flagged + 404 pages */
+  console.log('→ flagged page');
   await open('flagged-for-review.html');
   assert((await page.locator('table tbody tr').count()) >= 7, 'flagged table rows missing');
   assertClean('flagged page');

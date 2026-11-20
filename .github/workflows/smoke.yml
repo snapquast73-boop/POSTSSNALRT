@@ -27,6 +27,7 @@ jobs:
           node tools/replay-feed-render-test.mjs
           node tools/render-alert-sound.mjs
           node tools/alert-sound-independent-check.mjs
+          node tools/front-end-logic-test.mjs
 
   live:
     runs-on: ubuntu-latest
