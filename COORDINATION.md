@@ -34,6 +34,16 @@ sessions were active; all scopes were claimed sequentially by f8d07dda).
 
 ## Verification log
 
+- 2026-11-20 — MLB official game-status registry [`/api/v1/gameStatus`](https://statsapi.mlb.com/api/v1/gameStatus) fetched via `fetch_page` (all 4 chunks): code `MJ` = "Player challenge: Pitch Result" (player pitch challenge — the ABS pitch challenge, per MLB's own ABS pages: [abs-challenge-system-mlb-2026](https://www.mlb.com/news/abs-challenge-system-mlb-2026), [visual guide to how ABS works](https://www.mlb.com/interactive/mlb-abs-system-explainer)); registry distinguishes replay `statusCode` from `abstractGameCode` (MJ: statusCode `MJ`, abstractGameCode `L`). Cross-check vs `assets/js/reviews.js`: site manager codes (21) + `MS` (boundary) + `MJ` (abs) cover all 23 MLB M codes; site crew-chief codes (22) + `NS` (boundary) cover all 23 MLB N codes. F-03 verified.
+- 2026-11-20 — MLB ABS explainer link [abs-challenge-system-mlb-2026](https://www.mlb.com/news/abs-challenge-system-mlb-2026) now redirects (MLB restructure) to the unrelated page [padres-remaining-needs-for-2026-2027-offseason](https://www.mlb.com/news/padres-remaining-needs-for-2026-2027-offseason) — verified via `fetch_page`; stale link flagged as F-08 (see flagged-for-review.html). Substitute official source for ABS rules: [visual guide to how ABS works](https://www.mlb.com/interactive/mlb-abs-system-explainer) and [ABS Challenge System explainer](https://www.mlb.com/interactive/mlb-abs-system-explainer) (from MLB, verified accessible).
+- 2026-11-20 — MLB official event-type registry [`/api/v1/eventTypes`](https://statsapi.mlb.com/api/v1/eventTypes): `os_ruling_pending_primary` / `os_ruling_pending_prior` present with description "Official Scorer Ruling Pending" (matches `Reviews.PENDING_EVENT_TYPES`).
+- 2026-11-20 — MLB official team list [`/api/v1/teams?sportId=1`](https://statsapi.mlb.com/api/v1/teams?sportId=1) fetched (all 3 chunks); team IDs/names used by the UI (Tigers 116 — Detroit Tigers, Rays 139 — Tampa Bay Rays, both verified in the game-822974 feed data above).
+- 2026-11-20 — MLB official schedule [`/api/v1/schedule?sportId=1&date=2024-10-30`](https://statsapi.mlb.com/api/v1/schedule?sportId=1&date=2024-10-30): game 775296 (Dodgers 7, Yankees 6, Final) — matches SOURCE-PROVENANCE.md. [`?date=2026-11-20`](https://statsapi.mlb.com/api/v1/schedule?sportId=1&date=2026-11-20): empty (no games) — consistent with MLB; [`?sportId=1&startDate=2026-10-20&endDate=2026-11-05`](https://statsapi.mlb.com/api/v1/schedule?sportId=1&startDate=2026-10-20&endDate=2026-11-05): games through 2026-10-28 (World Series).
+- 2026-11-20 — Game 822974 live feed [`/api/v1.1/game/822974/feed/live`](https://statsapi.mlb.com/api/v1.1/game/822974/feed/live) fetched (Tigers vs Rays, Final, 2026-06-01; `reviewDetails` with `reviewType: "MJ"` present — site scans `play.reviewDetails` and `playEvents[].reviewDetails`).
+- 2026-11-20 — Server smoke re-run (PORT 8000): `/api/health` 200, `/` 200, `assets/css/style.css` 200, `assets/js/*.js` 200, `/api/feed-log` 200, unknown path 404.
+- 2026-11-20 — `python3 qa/check-links.py`: **0 unresolved local references** (re-run).
+- 2026-11-20 — `node --check`: all JS/MJS OK (re-run: `assets/js/*.js`, `server.mjs`, `tools/*.mjs`).
+- 2026-11-20 — Fixture suite re-run: **120 passed, 0 failed** (25+8+7+25+40+7+8); alert-sound tools 7/7 + 8/8. Live smoke fails from bash (TLS blocked) as expected (F-02); CI (`.github/workflows/smoke.yml`) runs it on push/PR + nightly. F-02 now verified live via `fetch_page` (see flagged-for-review.html).
 - 2026-11-20 — Official glossary/scoring pages fetched live via `fetch_page`: [Replay Review](https://www.mlb.com/glossary/rules/replay-review), [Manager Challenge](https://www.mlb.com/glossary/rules/manager-challenge), [Scoring Changes](https://www.mlb.com/official-information/scoring-changes). `docs.statsapi.mlb.com` is partner-gated (Okta login) — no public reference; endpoints verified via payload contract + community endpoint maps only, flagged F-02.
 - 2026-11-20 — `node --check`: all JS/MJS OK (one comment syntax error in `reviews.js` found & fixed).
 - 2026-11-20 — Fixture suite: **120 passed, 0 failed** (25+8+7+25+40+7+8). Live smoke fails in sandbox as expected (F-02), passes in CI.
@@ -52,13 +62,19 @@ sessions were active; all scopes were claimed sequentially by f8d07dda).
 
 ## Flagged items (needs review — published, non-blocking)
 
-All items F-01…F-07 are published with official source links on
+All items F-01…F-08 are published with official source links on
 [flagged-for-review.html](flagged-for-review.html). Summary: F-01 missing
-assets rebuilt from contracts; F-02 StatsAPI unverifiable from sandbox
-(verify in browser/CI); F-03 review-code meanings unverified; F-04 props
-forecast not invented (observed data only); F-05 no recording committed
-(licence slot documented); F-06 original docs/tools check counts not
-reproducible (rebuilt honestly); F-07 upstream parity unverifiable (404).
+assets rebuilt from contracts; F-02 StatsAPI unverifiable from sandbox —
+since verified live via `fetch_page` (gameStatus, eventTypes, teams,
+schedules, game 822974 feed — see F-02 row); F-03 review-code meanings
+verified against MLB's official game-status registry (MJ = Player
+challenge: Pitch Result; M/N code lists cross-checked — see F-03 row);
+F-04 props forecast not invented (observed data only); F-05 no recording
+committed (licence slot documented); F-06 original docs/tools check counts
+not reproducible (rebuilt honestly); F-07 upstream parity unverifiable
+(404); F-08 ABS explainer link stale — redirects to an unrelated page;
+substitute verified source is the visual guide at
+https://www.mlb.com/interactive/mlb-abs-system-explainer.
 
 ## Production acceptance — session 4c0d40cc (done)
 
@@ -102,6 +118,40 @@ reproducible (rebuilt honestly); F-07 upstream parity unverifiable (404).
 - 1016822d — Preserved PR #7 release records during a second additive board conflict. An attempted pull/rebase after the integration merge replayed the board conflict; aborted rebase to preserve both histories.
 
 - 3f78f25b release: [PR #5](https://github.com/snapquast73-boop/POSTSSNALRT/pull/5) merged (`434c7a7`); concurrent board merges superseded its first deployment. The [combined main deployment](https://github.com/snapquast73-boop/POSTSSNALRT/actions/runs/44829262037) succeeded at `8756be8` with the repair included.
+
+
+## Session 31861034 — claim (2026-11-20, branch `arena/31861034-postssnalrt`)
+
+Session ID `31861034`. Session branch is Arena-assigned (`arena/31861034-postssnalrt`); this session cannot create other branches, so all work is committed to this branch and merged to `main` through a PR from it.
+
+Claimed (non-overlapping with the in-progress V1–V3 claim of `a35ded9a`, PR #9, which owns live-site functional repair in `assets/js/*`, `404.html`, `qa/`, `tools/live-data-check.mjs`):
+
+| ID | Task | Status | Owner | Files touched |
+|----|------|--------|-------|---------------|
+| S1 | Source and link audit of every official URL cited in the repo; record fetch result, date and the claim each one supports | in progress | 31861034 | `docs/source-audit.md` (new) |
+| S2 | Line-by-line check of the deployed game table (linescore) against the official MLB linescore endpoint | in progress | 31861034 | `docs/source-audit.md` (section) |
+| S3 | Reference-parity record: deployed pages vs the two reference pages named in the request, and the unreachable upstream | in progress | 31861034 | `docs/reference-parity.md` (new) |
+| S4 | Integration: PR from this branch to `main`, CI, Pages deploy check, record in this file | pending | 31861034 | `COORDINATION.md` (append only) |
+
+Not touched by this session: `assets/js/**`, `404.html`, `index.html`, `game.html`, `reviews.html`, `sound-lab.html`, `flagged-for-review.html`, `README.md`, `qa/**`, `tools/**`, `.github/**`. Requests for changes in those files are logged below instead of being made.
+
+## Session 31861034 — results (2026-11-20)
+
+| ID | Status | Output | Sources (fetched 2026-11-20 via `fetch_page`) | Irregularities |
+|----|--------|--------|------------------------------------------------|----------------|
+| S1 source audit | **done** | [docs/source-audit.md](docs/source-audit.md) | Official: [gameStatus](https://statsapi.mlb.com/api/v1/gameStatus), [eventTypes](https://statsapi.mlb.com/api/v1/eventTypes), [schedule 2024-10-30](https://statsapi.mlb.com/api/v1/schedule?sportId=1&date=2024-10-30), [MLB Replay Review](https://www.mlb.com/glossary/rules/replay-review), [MLB Manager Challenge](https://www.mlb.com/glossary/rules/manager-challenge), [MLB Scoring Changes](https://www.mlb.com/official-information/scoring-changes), [MLB ABS explainer](https://www.mlb.com/news/abs-challenge-system-mlb-2026), [Baseball Savant ABS](https://baseballsavant.mlb.com/leaderboard/abs-challenges). Non-MLB licence/reference: [Pixabay licence](https://pixabay.com/service/license-summary/), [Pixabay 125042](https://pixabay.com/sound-effects/film-special-effects-cash-register-kaching-sound-effect-125042/), [Pixabay 88639](https://pixabay.com/sound-effects/film-special-effects-cash-register-fake-88639/), [Freesound 184438](https://freesound.org/people/CapsLok/sounds/184438/). | A-01 to A-08 (listed in the audit) |
+| S2 game-table check (775296) | **done** | section 4 of [docs/source-audit.md](docs/source-audit.md) | [linescore](https://statsapi.mlb.com/api/v1/game/775296/linescore), [live feed (filtered)](https://statsapi.mlb.com/api/v1.1/game/775296/feed/live?fields=liveData,linescore,teams,home,away,errors,runs,hits,innings,num,fielding,boxscore,teamStats,errors), [decisions](https://statsapi.mlb.com/api/v1.1/game/775296/feed/live?fields=liveData,decisions,winner,loser,save,players,fullName,id) | A-03: NYY errors **2 vs 3** between MLB's own endpoints. Page shows the feed value. Not corrected. |
+| S3 reference parity | **done** | [docs/reference-parity.md](docs/reference-parity.md) | Rendered: [LIVPBP2 reviews](https://snapquast73-boop.github.io/LIVPBP2/reviews.html), [LIVPBP2 game 775296](https://snapquast73-boop.github.io/LIVPBP2/game.html?gamePk=775296), [POSTSSNALRT reviews](https://snapquast73-boop.github.io/POSTSSNALRT/reviews.html), [POSTSSNALRT game 775296](https://snapquast73-boop.github.io/POSTSSNALRT/game.html?gamePk=775296). Upstream: [buffedlizard55-lab/MLB-Live-PBP](https://buffedlizard55-lab.github.io/MLB-Live-PBP/reviews.html) (not reachable). | The original is unreachable, so neither reference can be proven identical to it (A-01). The two references differ in tab set and props model (A-06). |
+
+**Verification performed:** every official value listed in S1/S2 was read from the cited endpoint on 2026-11-20. The Pages sites were rendered with the fetch tool. Local checks: `python3 qa/check-links.py` → 0 unresolved local references (including the two new docs); `node tools/*-test.mjs` suites unchanged and passing (no code changed in this session).
+
+**No code changed.** Functional repair of the live site (team abbreviations, runs-at-risk, empty-slate fallback, 404) remains owned by `a35ded9a` (PR #9, V1–V3, commits still active at 22:37 UTC). This session did not merge, rebase onto, or edit PR #9.
+
+**Request to owner of `flagged-for-review.html` (`a35ded9a`, task V3) — not edited here:** please add A-01 to A-08 from [docs/source-audit.md §6](docs/source-audit.md) to the Flagged for Review page, with the source links given in that file, and add the A-03 team-error discrepancy to the game-table irregularities. Until that happens, the full list is published in the repo at `docs/source-audit.md` and `docs/reference-parity.md`.
+
+**Request to owner of `README.md` (`a35ded9a`, V3) — not edited here:** A-04 (README says "verified live 2026-09-29"; the records are 2026-11-20) and A-05 ("two real cash-register recordings"; Freesound 184438 says it is not an actual cash register) should be corrected or flagged on the page.
+
+**Handoff note:** none. No claim taken over; no other session's work touched.
 
 ---
 

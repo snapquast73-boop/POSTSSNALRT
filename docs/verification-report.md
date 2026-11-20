@@ -86,9 +86,9 @@ below was reproduced against official MLB data before it was changed.
 | Replay-feed labels used full club names | [`GET /api/v1.1/game/822974/feed/live`](https://statsapi.mlb.com/api/v1.1/game/822974/feed/live) carries `gameData.teams.{away,home}.abbreviation` | `assets/js/reviews-feed.js` `feedLabel()` prefers the feed's own abbreviations | browser check asserts every `.feed-matchup` matches `AAA @ BBB` |
 | Runs at Risk never populated | `runners[].details.isScoringEvent` / `playIndex` exist in the official feed; the old code evaluated only brand-new rows on the current play | re-evaluated for every tracked review on every poll | `tools/live-data-check.mjs` compares the function with the payload attribution for every review in four games per date |
 | Object-shaped `reviewDetails` missed by the legacy no-review path | payload delivers `reviewDetails` as an object, not an array | `Reviews.hasReviewDetails()` accepts either shape | `tools/front-end-logic-test.mjs` |
-| Every page empty today | [`date=2026-11-20` → `{"dates":[]}`](https://statsapi.mlb.com/api/v1/schedule?sportId=1&date=2026-11-20); last slate [2026-10-28](https://statsapi.mlb.com/api/v1/schedule?sportId=1&startDate=2026-10-20&endDate=2026-11-20) | one-time empty-slate fallback + banner (flagged F-08) | `tools/live-data-check.mjs` (fallback vs an independent range query) and the browser check |
+| Every page empty today | [`date=2026-11-20` → `{"dates":[]}`](https://statsapi.mlb.com/api/v1/schedule?sportId=1&date=2026-11-20); last slate [2026-10-28](https://statsapi.mlb.com/api/v1/schedule?sportId=1&startDate=2026-10-20&endDate=2026-11-20) | one-time empty-slate fallback + banner (flagged F-09) | `tools/live-data-check.mjs` (fallback vs an independent range query) and the browser check |
 | Nested 404 lost styling/links | GitHub serves `404.html` at the missing path | adopted [PR #5](https://github.com/snapquast73-boop/POSTSSNALRT/pull/5)'s `<base>` repair instead of a duplicate rewrite | browser check asserts the stylesheet and back-link resolve to the project root |
-| Post-deploy acceptance never ran | runs 44828791518 / 44828796450 skipped; no run for the `success` status; `workflow_dispatch` had no default URL | `workflow_run` on `pages build and deployment` + defaulted dispatch (flagged F-09) | run list on `main` after merge |
+| Post-deploy acceptance never ran | runs 44828791518 / 44828796450 skipped; no run for the `success` status; `workflow_dispatch` had no default URL | `workflow_run` on `pages build and deployment` + defaulted dispatch (flagged F-10) | run list on `main` after merge |
 
 ### Checks in this pass
 
@@ -106,5 +106,5 @@ below was reproduced against official MLB data before it was changed.
 - The build sandbox cannot reach `statsapi.mlb.com`; every live assertion above
   ran in CI, and the run IDs are recorded in `COORDINATION.md`.
 - Exact upstream parity is still unverifiable (upstream repo 404 — F-07).
-- The empty-slate fallback is an addition (F-08), not recovered upstream code.
+- The empty-slate fallback is an addition (F-09), not recovered upstream code.
 - Alert-sound measurements are unchanged from the previous pass (F-05).
