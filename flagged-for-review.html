@@ -24,7 +24,7 @@
       Irregularities and unverified items from the repair of this repo (2026-11-20).
       Every row links to an official source for manual review. Where a value could
       not be confirmed from an official source it is left blank and flagged —
-      never inferred or filled in. These items do **not** block the site going
+      never inferred or filled in. These items do not block the site going
       live; request changes any time and they will be worked on in the next session.
     </p>
 
@@ -35,31 +35,31 @@
       <tbody>
         <tr>
           <td>F-01</td>
-          <td>The upload was missing its entire <code>assets/</code> tree (<code>assets/css/style.css</code> + 7 JS files), plus <code>docs/</code>, <code>tools/</code>, <code>data/</code> and <code>.github/workflows/</code>. Every page rendered unstyled with all scripts 404ing, while Pages still reported a successful build.</td>
-          <td>Rebuilt all missing files from the contracts in the surviving HTML, <code>server.mjs</code>, <code>sound-lab.html</code> and <code>README.md</code> (see <code>docs/verification-report.md</code>). Functionally equivalent; not verbatim (see F-07).</td>
+          <td>The upload was missing its entire <code>assets/</code> tree (<code>assets/css/style.css</code> + 8 JS files), plus <code>docs/</code>, <code>tools/</code>, <code>data/</code> and <code>.github/workflows/</code>. Every page rendered unstyled with all scripts 404ing, while Pages still reported a successful build.</td>
+          <td>Rebuilt all missing files from the contracts in the surviving HTML, <code>server.mjs</code>, <code>sound-lab.html</code> and <code>README.md</code> (see <code>docs/verification-report.md</code>). Exact parity is unverified (see F-07).</td>
           <td><a href="https://github.com/snapquast73-boop/POSTSSNALRT">Repo (this site)</a> · <a href="https://docs.github.com/en/pages">GitHub Pages docs</a></td>
         </tr>
         <tr>
           <td>F-02</td>
-          <td>Live MLB StatsAPI responses could not be re-verified in the build sandbox (outbound TLS to <code>statsapi.mlb.com</code> is blocked there). The ABS explainer + leaderboard links below are carried from <code>README.md</code> and were not re-fetched.</td>
-          <td>Client fails loudly on non-2xx/non-JSON; fixture tests pass offline; live smoke (<code>tools/smoke-test.mjs</code>) runs in CI. Verify in the browser: open <a href="reviews.html">Replay Feed</a> and confirm live rows appear.</td>
+          <td>The initial restoration did not check all live MLB payloads from the build shell (outbound TLS to <code>statsapi.mlb.com</code> is blocked there). The ABS explainer + leaderboard links below are carried from <code>README.md</code> and were not re-fetched.</td>
+          <td>Client fails loudly on non-2xx/non-JSON; fixture tests pass offline; live smoke (<code>tools/smoke-test.mjs</code>) runs in CI. The follow-up browser test compares historical scoreboard and review records to MLB. This does not certify every future game or every live alert.</td>
           <td><a href="https://statsapi.mlb.com">MLB StatsAPI (data host)</a> · <a href="https://statsapi.mlb.com/api/v1/eventTypes">Event-type registry</a> · <a href="https://statsapi.mlb.com/api/v1/gameStatus">Game-status registry</a> · <a href="https://www.mlb.com/news/abs-challenge-system-mlb-2026">ABS Challenge System explainer</a> · <a href="https://baseballsavant.mlb.com/leaderboard/abs-challenges">ABS Challenges leaderboard</a></td>
         </tr>
         <tr>
           <td>F-03</td>
-          <td>Review code meanings (<code>MA</code>/<code>MF</code>/<code>MJ</code>/…) and exact runner-scoring field names for runs-at-risk could not be confirmed from an official source in the sandbox.</td>
-          <td>Classification keys off the payload's own <code>type.description</code> text first; codes are shown verbatim as opaque labels. Runs-at-risk returns <code>false</code> when the payload shape is unrecognised (never guessed). Counter regressions are flagged, never corrected.</td>
+          <td>The official registry lists MJ as a player pitch challenge and distinguishes replay statusCode from abstractGameCode. Game 822974 contains reviewDetails objects on plays and pitches.</td>
+          <td>The restored reader handles both locations. Exact original alert timing and behavior during a live overturn remain unverified. See the <a href="https://statsapi.mlb.com/api/v1.1/game/822974/feed/live">official game feed</a> and <a href="https://statsapi.mlb.com/api/v1/gameStatus">status registry</a>.</td>
           <td><a href="https://www.mlb.com/glossary/rules/replay-review">Replay Review glossary</a> · <a href="https://www.mlb.com/glossary/rules/manager-challenge">Manager Challenge glossary</a> · <a href="https://www.mlb.com/official-information/scoring-changes">Scoring Changes log</a></td>
         </tr>
         <tr>
           <td>F-04</td>
           <td><code>game.html</code> promises a "transparent two-sided hit forecast" in its meta description, but no forecast model was in the upload.</td>
-          <td>Props tab shows **observed payload data only** (matchup, count, base state, season stats when the endpoint answers). No probabilities are invented. A verified model can be added later without changing the tab's structure.</td>
+          <td>Props tab shows observed payload data only (matchup, count, base state, season stats when the endpoint answers). No probabilities are invented. A verified model can be added later without changing the tab's structure.</td>
           <td><a href="https://statsapi.mlb.com">MLB StatsAPI (people-stats endpoint)</a></td>
         </tr>
         <tr>
           <td>F-05</td>
-          <td>No audio recording is committed (the reference cha-ching is a paid Bandcamp release). Fallback verification figures in <code>README.md</code> / <code>docs/alert-sound.md</code> are recorded claims from the original build, not re-measured here; the Node render harness (<code>tools/render-alert-sound.mjs</code>) measures brighter (centroid ~12 kHz vs recorded 5602 Hz) because it is a harness, not the browser WebAudio synth.</td>
+          <td>No audio recording is committed (the source recording could not be verified here). Fallback verification figures in <code>README.md</code> / <code>docs/alert-sound.md</code> are recorded claims from the original build, not re-measured here; the Node render harness (<code>tools/render-alert-sound.mjs</code>) measures brighter (centroid ~12 kHz vs recorded 5602 Hz) because it is a harness, not the browser WebAudio synth.</td>
           <td>Site ships the synthesized fallback; install a licensed recording via <a href="sound-lab.html">Sound Lab</a> (no code changes) and record its licence in <code>assets/audio/LICENCE.md</code>.</td>
           <td><a href="https://pixabay.com/service/license-summary/">Pixabay Content Licence summary</a> · <a href="https://pixabay.com/sound-effects/film-special-effects-cash-register-kaching-sound-effect-125042/">Pixabay 125042</a> · <a href="https://pixabay.com/sound-effects/film-special-effects-cash-register-fake-88639/">Pixabay 88639</a></td>
         </tr>
@@ -73,7 +73,7 @@
           <td>F-07</td>
           <td>Upstream repo <code>buffedlizard55-lab/MLB-Live-PBP</code> returns 404 via the GitHub API and its Pages site could not be fetched, so verbatim parity with upstream cannot be verified.</td>
           <td>Parity is claimed only where the surviving contracts prove it (HTML IDs/handlers, <code>server.mjs</code> API, Sound Lab <code>ReplayFeed</code> surface, README tables). Everything else is flagged above.</td>
-          <td><a href="https://github.com/buffedlizard55-lab/MLB-Live-PBP">Upstream repo (404 at repair time)</a> · <a href="https://buffedlizard55-lab.github.io/MLB-Live-PBP/reviews.html">Upstream site (unreachable at repair time)</a></td>
+          <td><a href="https://github.com/snapquast73-boop/POSTSSNALRT/blob/main/SOURCE-PROVENANCE.md">Source search and evidence</a> · <a href="https://github.com/snapquast73-boop/POSTSSNALRT/blob/ad2ea0a19b75252627c1fe80ca6ca5545f3a339f/README.md">Original upload naming the site</a></td>
         </tr>
       </tbody>
     </table>

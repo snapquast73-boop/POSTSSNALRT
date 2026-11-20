@@ -64,9 +64,12 @@ try {
   await page.locator('[data-tab="reviews"]').click();
   assert.equal(await page.locator('#reviews-wrap .badge.abs').count(), absCount);
   await open('reviews.html');
-  const replayFetch = page.waitForResponse(res => res.ok() && new URL(res.url()).origin === stats && new URL(res.url()).pathname === feedUrl.pathname);
-  await page.locator('#date-picker').fill(date);
-  await replayFetch;
+  await page.locator('#date-picker').fill('2026-06-01');
+  const listed = page.locator('.feed-item').filter({has:page.locator(`a[href="${stats}/api/v1.1/game/${absPk}/feed/live"]`)}).filter({has:page.locator('.badge.abs')});
+  await listed.first().waitFor({timeout:60000});
+  assert.equal(await listed.count(), absCount);
+  await page.getByRole('button', {name:'ABS',exact:true}).click();
+  assert.equal(await listed.count(), absCount);
   await open('sound-lab.html');
   await page.waitForFunction(() => typeof window.ReplayFeed?.playAlertSound === 'function');
   await open('flagged-for-review.html');

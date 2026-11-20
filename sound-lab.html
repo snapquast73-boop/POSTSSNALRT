@@ -117,14 +117,12 @@
     <section class="lab-card">
       <h2>How it measures</h2>
       <p class="lede">
-        The same measurements <code>tools/render-alert-sound.mjs</code> makes, computed in the
-        browser on the decoded PCM: identical frame sizes, identical windows, identical FFT
-        (2048-point Hann, 1024 hop), so these numbers are directly comparable to that tool's and
-        to the reference column.
+        Measurements are calculated locally from the audio you select. The original reference recording is unavailable;
+        its reference values are blank and no match rating is assigned. See <a href="flagged-for-review.html">Flagged for Review</a>.
       </p>
       <table class="lab-table">
         <thead>
-          <tr><th>Measurement</th><th>This file</th><th>Real recording</th><th>What it means</th></tr>
+          <tr><th>Measurement</th><th>This file</th><th>Real recording</th><th>What it means</th><th>Source</th></tr>
         </thead>
         <tbody id="lab-metrics"></tbody>
       </table>
@@ -335,23 +333,6 @@
       return attacks;
     }
 
-    /* Reference figures, measured from a real cash-register cha-ching
-     * recording decoded to PCM at 48 kHz. Method and provenance:
-     * docs/alert-sound.md §2. These are the numbers the synthesized fallback
-     * is verified against, and the yardstick for a recording you drop in. */
-    var REF = {
-      bodyP90: -6.5,          // p90 of 25 ms frames over 0-0.6 s
-      loudestFrame: -6.3,     // loudest 25 ms frame, 0 -> strike
-      peak: -0.0,             // hard-limited in mastering
-      peakToBody: 6.5,
-      audible40: 1.070,       // span of 10 ms frames above -40 dB
-      onsetRise: 14.7,        // first 25 ms frame -> loudest, 0 -> strike
-      plateauSpread: 1.06,    // p95-p50 of 2 ms frames, 0.05 s -> strike
-      plateauStd: 1.80,
-      plateauP50: -7.2,
-      attacks: 3,
-      centroid: 6033          // Hz; a second reference measured 6219 Hz
-    };
     var SPEC = (RF && RF.alertSoundSpec) || null;
     var STRIKE_AT = SPEC && SPEC.bellStrikes && SPEC.bellStrikes[0] ? SPEC.bellStrikes[0].at : 0.5;
     var PLATEAU_FROM = 0.05;
@@ -399,29 +380,29 @@
 
     /* ------------------------------------------------------- metrics view */
     var METRICS = [
-      { key: 'duration', label: 'Length', unit: ' s', digits: 3, ref: null,
+      { key: 'duration', label: 'Length', unit: ' s', digits: 3,
         note: '1–2 s is the design target' },
-      { key: 'peakDb', label: 'Peak', unit: ' dBFS', digits: 1, ref: REF.peak,
+      { key: 'peakDb', label: 'Peak', unit: ' dBFS', digits: 1,
         note: 'normalized to −2.0 dBFS on install' },
-      { key: 'bodyP90', label: 'Body level (p90, first 0.6 s)', unit: ' dB', digits: 1, ref: REF.bodyP90,
+      { key: 'bodyP90', label: 'Body level (p90, first 0.6 s)', unit: ' dB', digits: 1,
         note: 'how loud the machine actually is' },
-      { key: 'loudestFrame', label: 'Loudest 25 ms frame', unit: ' dB', digits: 1, ref: REF.loudestFrame,
+      { key: 'loudestFrame', label: 'Loudest 25 ms frame', unit: ' dB', digits: 1,
         note: 'the peak level of the “cha”' },
-      { key: 'peakToBody', label: 'Peak minus body', unit: ' dB', digits: 1, ref: REF.peakToBody,
+      { key: 'peakToBody', label: 'Peak minus body', unit: ' dB', digits: 1,
         note: 'small = dense; large = spikes over silence' },
-      { key: 'audible40', label: 'Audible above −40 dB', unit: ' s', digits: 3, ref: REF.audible40,
+      { key: 'audible40', label: 'Audible above −40 dB', unit: ' s', digits: 3,
         note: 'genuinely audible length, not file length' },
-      { key: 'onsetRise', label: 'Onset rise (first frame → loudest)', unit: ' dB', digits: 1, ref: REF.onsetRise,
+      { key: 'onsetRise', label: 'Onset rise (first frame → loudest)', unit: ' dB', digits: 1,
         note: 'a real “cha” ramps; a hiss does not' },
-      { key: 'plateauSpread', label: 'Plateau texture (p95−p50, 2 ms)', unit: ' dB', digits: 2, ref: REF.plateauSpread,
+      { key: 'plateauSpread', label: 'Plateau texture (p95−p50, 2 ms)', unit: ' dB', digits: 2,
         note: '~0 is a hiss, >3 is isolated spikes' },
-      { key: 'plateauStd', label: 'Plateau std dev', unit: ' dB', digits: 2, ref: REF.plateauStd,
+      { key: 'plateauStd', label: 'Plateau std dev', unit: ' dB', digits: 2,
         note: 'how much the mechanism varies' },
-      { key: 'plateauP50', label: 'Plateau level (p50)', unit: ' dB', digits: 1, ref: REF.plateauP50,
+      { key: 'plateauP50', label: 'Plateau level (p50)', unit: ' dB', digits: 1,
         note: 'the single number a weak “cha” gets worst' },
-      { key: 'attacks', label: 'Attacks (4 ms rises ≥ 6 dB)', unit: '', digits: 0, ref: REF.attacks,
+      { key: 'attacks', label: 'Attacks (4 ms rises ≥ 6 dB)', unit: '', digits: 0,
         note: 'separate mechanical events the ear gets' },
-      { key: 'centroid', label: 'Spectral centroid of the “cha”', unit: ' Hz', digits: 0, ref: REF.centroid,
+      { key: 'centroid', label: 'Spectral centroid of the “cha”', unit: ' Hz', digits: 0,
         note: 'brightness; ~3300 Hz sounds dull by comparison' }
     ];
 
@@ -431,13 +412,6 @@
       METRICS.forEach(function (row) {
         var v = m[row.key];
         var tr = document.createElement('tr');
-        var cls = '';
-        if (row.ref !== null && typeof v === 'number') {
-          // Within 3 dB (or ±1 attack, ±900 Hz) of the reference counts as a match.
-          var tol = row.key === 'attacks' ? 1 : row.key === 'centroid' ? 900 : 3;
-          cls = Math.abs(v - row.ref) <= tol ? 'hit' : 'miss';
-        }
-        tr.className = cls;
         var th = document.createElement('th');
         th.scope = 'row';
         th.textContent = row.label;
@@ -448,11 +422,14 @@
           : '—';
         var tdR = document.createElement('td');
         tdR.className = 'num';
-        tdR.textContent = row.ref === null ? '—' : row.ref + row.unit;
+        tdR.title = 'Unverified: original recording unavailable';
         var tdN = document.createElement('td');
         tdN.textContent = row.note;
         tdN.style.color = '#9aa4b2';
         tr.appendChild(th); tr.appendChild(tdV); tr.appendChild(tdR); tr.appendChild(tdN);
+        var source = tr.insertCell();
+        var a = document.createElement('a');
+        a.href = 'https://github.com/snapquast73-boop/POSTSSNALRT/blob/ad2ea0a19b75252627c1fe80ca6ca5545f3a339f/sound-lab.html'; a.textContent = 'Measurement method'; source.appendChild(a);
         tbody.appendChild(tr);
       });
     }

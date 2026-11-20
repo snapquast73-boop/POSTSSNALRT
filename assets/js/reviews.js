@@ -64,7 +64,7 @@
       badgeClass = 'abs';
     } else if (['MS', 'NS'].includes(code)) {
       typeKey = 'boundary'; label = 'Stadium boundary call'; badgeClass = 'boundary';
-    } else if (/^M[FAUMCPEHODTIBRNGQKLXV]$/.test(code) || text.indexOf('manager challenge') !== -1) {
+    } else if (['MF','MA','MU','MM','MC','MP','ME','MH','MO','MD','MT','MI','MB','MR','MN','MG','MQ','MK','ML','MX','MV'].includes(code) || text.indexOf('manager challenge') !== -1) {
       typeKey = 'challenge';
       label = 'Manager challenge';
       badgeClass = 'challenge';
@@ -73,7 +73,7 @@
       typeKey = 'boundary';
       label = 'Boundary call review';
       badgeClass = 'boundary';
-    } else if (/^N[FAWUMCPEHODTIBRNGQKLXJ]$/.test(code) || text.indexOf('crew chief') !== -1 || text.indexOf('umpire') !== -1 ||
+    } else if (['NF','NA','NW','NU','NM','NC','NP','NE','NH','NO','ND','NT','NI','NB','NR','NN','NG','NQ','NK','NL','NX','NJ'].includes(code) || text.indexOf('crew chief') !== -1 || text.indexOf('umpire') !== -1 ||
                text.indexOf('replay review') !== -1 || text.indexOf('instant replay') !== -1) {
       typeKey = 'review';
       label = 'Crew-chief / umpire review';
@@ -103,7 +103,7 @@
   function extractReviewsFromPlay(play, playIndex) {
     var out = [];
     var seen = {};
-    function add(detail, suffix) {
+    function add(detail, suffix, eventIndex) {
       if (!detail || typeof detail !== 'object') return;
       var id = reviewId(detail, play, playIndex);
       if (detail.id == null) id += suffix;
@@ -112,6 +112,7 @@
       var c = classifyReview(detail);
       out.push({
         id: id,
+        eventIndex: eventIndex ?? null,
         typeKey: c.typeKey,
         label: c.label,
         badgeClass: c.badgeClass,
@@ -126,13 +127,13 @@
         playDescription: play && play.result ? play.result.description : null,
       });
     }
-    function collect(value, suffix) {
-      if (Array.isArray(value)) value.forEach(function (detail, i) { add(detail, suffix + '-' + i); });
-      else add(value, suffix);
+    function collect(value, suffix, eventIndex) {
+      if (Array.isArray(value)) value.forEach(function (detail, i) { add(detail, suffix + '-' + i, eventIndex); });
+      else add(value, suffix, eventIndex);
     }
     collect(play && play.reviewDetails, '');
     ((play && play.playEvents) || []).forEach(function (event, i) {
-      if (event) collect(event.reviewDetails, '-event-' + (event.playId || (event.index ?? i)));
+      if (event) collect(event.reviewDetails, '-event-' + (event.playId || (event.index ?? i)), event.index);
     });
     return out;
   }
@@ -235,8 +236,14 @@
    * event under review (README.md / reviews.html footer). Defensive field
    * checks; returns false when the shape is unrecognised (flagged F-03).
    */
-  function runsAtRisk(play) {
+  function runsAtRisk(play, review) {
     if (!play) return false;
+    if (review) {
+      if (!['challenge','review','boundary','abs'].includes(review.typeKey)) return false;
+      // For a pitch-level review, require the scorer to identify that exact event.
+      return (play.runners || []).some(r => r.details?.isScoringEvent === true &&
+        (review.eventIndex == null ? review.typeKey !== 'abs' : r.details.playIndex === review.eventIndex));
+    }
     var hasReview = Array.isArray(play.reviewDetails) && play.reviewDetails.length > 0;
     if (!hasReview) {
       var events = play.playEvents || [];

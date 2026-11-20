@@ -1,12 +1,13 @@
 name: Pages browser acceptance
 on:
+  workflow_dispatch:
   pull_request:
   deployment_status:
 permissions:
   contents: read
 jobs:
   browser:
-    if: github.event_name == 'pull_request' || (github.event.deployment_status.state == 'success' && github.event.deployment.environment == 'github-pages')
+    if: github.event_name != 'deployment_status' || (github.event.deployment_status.state == 'success' && github.event.deployment.environment == 'github-pages')
     runs-on: ubuntu-latest
     timeout-minutes: 5
     steps:

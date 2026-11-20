@@ -50,6 +50,7 @@
 
   var state = {
     date: null,
+    request: 0,
     filter: 'all',
     entries: [],          // feed-log entries { gamePk, review, firstSeen, lastSeen, matchupLabel }
     order: [],
@@ -481,7 +482,8 @@
       var play = plays.filter(function (p) {
         return String(p.about && p.about.atBatIndex) === String(entry.review.atBatIndex);
       })[0];
-      if (play && Reviews.runsAtRisk(play)) {
+      if (extracted.underReview.active && play && play.about?.atBatIndex === feed.liveData?.plays?.currentPlay?.about?.atBatIndex &&
+          Reviews.runsAtRisk(play, entry.review)) {
         entry.review.runsAtRisk = true;
         notifyRunsAtRisk(entry);
       }
@@ -645,6 +647,10 @@
         div.textContent = '⚠️ ' + note;
         item.appendChild(div);
       });
+      var source = document.createElement('a');
+      source.href = 'https://statsapi.mlb.com/api/v1.1/game/' + encodeURIComponent(entry.gamePk) + '/feed/live';
+      source.textContent = 'MLB source';
+      item.appendChild(source);
       host.appendChild(item);
     });
   }
@@ -664,32 +670,39 @@
 
   function load() {
     var date = currentDate();
+    var request = ++state.request;
+    var failed = 0;
     UI.setDateNav(date);
     UI.setStatus('Polling ' + UI.fmtDateLabel(date) + '…');
     setLiveDot('off');
     return Api.getSchedule(date).then(function (data) {
+      if (request !== state.request) return;
       state.games = (data && data.dates && data.dates[0] && data.dates[0].games) || [];
       // Fetch feeds sequentially in small batches to avoid hammering the API.
       var queue = state.games.slice();
       function nextBatch() {
-        if (!queue.length) return Promise.resolve();
+        if (request !== state.request || !queue.length) return Promise.resolve();
         var batch = queue.splice(0, 4);
         return Promise.all(batch.map(function (game) {
           return Api.getFeed(game.gamePk).then(function (feed) {
-            processFeed(game, feed);
-          }, function () { /* one failed feed must not block the rest */ });
+            if (request === state.request) processFeed(game, feed);
+          }, function () { failed++; });
         })).then(nextBatch);
       }
       return nextBatch().then(function () {
+        if (request !== state.request) return;
         return persist().then(function () {
+          if (request !== state.request) return;
           renderTabs();
           renderFeed();
-          setLiveDot('on');
+          setLiveDot(failed ? 'err' : 'on');
+          UI.showBanner(failed ? failed + ' game feed(s) unavailable. Results are incomplete.' : '', !!failed);
           UI.setStatus(state.entries.length + ' tracked event' + (state.entries.length === 1 ? '' : 's') +
             ' · ' + state.games.length + ' games · updated ' + new Date().toLocaleTimeString());
         });
       });
     }, function (err) {
+      if (request !== state.request) return;
       setLiveDot('err');
       UI.setStatus('Could not load the schedule: ' + err.message, true);
       UI.showBanner('Schedule unavailable — the MLB StatsAPI did not respond. Check your connection and try again.', true);
@@ -702,6 +715,7 @@
   }
 
   function restart() {
+    state.request++;
     if (state.timer) clearInterval(state.timer);
     if (state.countdownTimer) clearInterval(state.countdownTimer);
     if (state.unsubscribe) { state.unsubscribe(); state.unsubscribe = null; }
@@ -712,14 +726,20 @@
     // present) and poll. On Pages the subscribe fails quietly and polling
     // alone drives the feed.
     var date = currentDate();
+    state.gameLabels = {}; state.underReview = {}; state.games = [];
+    restoreFromLog({});
+    renderFeed();
     var boot = window.FeedLog ? FeedLog.load(date).then(function (log) {
+      if (date !== currentDate()) return;
       restoreFromLog(log);
       renderTabs();
       renderFeed();
     }) : Promise.resolve();
     boot.then(function () {
+      if (date !== currentDate()) return;
       if (window.FeedLog) {
         state.unsubscribe = FeedLog.subscribe(date, function (pushed) {
+          if (date !== currentDate()) return;
           restoreFromLog(FeedLog.mergeLogs(
             { v: 1, date: date, entries: state.entries, order: state.order,
               snapshots: state.snapshots, irregularities: state.irregularities,

@@ -144,17 +144,19 @@
     UI.setStatus('Loading schedule for ' + UI.fmtDateLabel(date) + '…');
     UI.showBanner('');
     var scheduleP = Api.getSchedule(date).then(function (data) {
+      if (date !== currentDate()) return;
       state.games = (data && data.dates && data.dates[0] && data.dates[0].games) || [];
       UI.setStatus(state.games.length
         ? state.games.length + ' game' + (state.games.length === 1 ? '' : 's') + ' · updated ' + new Date().toLocaleTimeString()
         : 'No games for ' + UI.fmtDateLabel(date) + '.');
     }, function (err) {
+      if (date !== currentDate()) return;
       state.games = [];
       UI.setStatus('Could not load the schedule: ' + err.message, true);
       UI.showBanner('Schedule unavailable — the MLB StatsAPI did not respond. Check your connection and try again.', true);
     });
     var logP = (window.FeedLog ? FeedLog.load(date).then(function (log) {
-      state.feedLog = log;
+      if (date === currentDate()) state.feedLog = log;
     }) : Promise.resolve());
     return Promise.all([scheduleP, logP]).then(function () {
       renderTabs();

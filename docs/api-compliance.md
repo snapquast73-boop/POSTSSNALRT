@@ -11,16 +11,16 @@
 
 | Endpoint | Used by | Purpose |
 | --- | --- | --- |
-| `/api/v1/schedule?sportId=1&date=YYYY-MM-DD` | `Api.getSchedule` (scoreboard, feed) | Games for one date |
-| `/api/v1/schedule?sportId=1&startDate=…&endDate=…` | `Api.getScheduleRange` | Date-range schedules |
-| `/api/v1.1/game/{gamePk}/feed/live` | `Api.getFeed` (game, feed) | Full live feed for one game |
-| `/api/v1/game/{gamePk}/boxscore` | `Api.getBoxscore` | Box score |
-| `/api/v1/game/{gamePk}/linescore` | `Api.getLinescore` | Linescore |
-| `/api/v1/teams?sportId=1` | `Api.getTeams` | Team list |
-| `/api/v1/people/{personId}` | `Api.getPerson` | Player bio |
-| `/api/v1/people/{personId}/stats?stats=…&season=…&group=…` | `Api.getPersonStats` (props) | Season stats |
-| `/api/v1/gameStatus` | `Api.getGameStatus` | Game-status registry (review codes `M*`/`N*`/`IH`) |
-| `/api/v1/eventTypes` | `Api.getEventTypes` | Event-type registry (`os_ruling_pending_primary` / `os_ruling_pending_prior`) |
+| `/api/v1/schedule?sportId=1&date=YYYY-MM-DD` | `Api.getSchedule` (scoreboard, feed) | Games for one date · [Source](https://github.com/snapquast73-boop/POSTSSNALRT/blob/f95dff4e96dabfcc456255490fae0f040d616f23/assets/js/api.js) |
+| `/api/v1/schedule?sportId=1&startDate=…&endDate=…` | `Api.getScheduleRange` | Date-range schedules · [Source](https://github.com/snapquast73-boop/POSTSSNALRT/blob/f95dff4e96dabfcc456255490fae0f040d616f23/assets/js/api.js) |
+| `/api/v1.1/game/{gamePk}/feed/live` | `Api.getFeed` (game, feed) | Full live feed for one game · [Source](https://github.com/snapquast73-boop/POSTSSNALRT/blob/f95dff4e96dabfcc456255490fae0f040d616f23/assets/js/api.js) |
+| `/api/v1/game/{gamePk}/boxscore` | `Api.getBoxscore` | Box score · [Source](https://github.com/snapquast73-boop/POSTSSNALRT/blob/f95dff4e96dabfcc456255490fae0f040d616f23/assets/js/api.js) |
+| `/api/v1/game/{gamePk}/linescore` | `Api.getLinescore` | Linescore · [Source](https://github.com/snapquast73-boop/POSTSSNALRT/blob/f95dff4e96dabfcc456255490fae0f040d616f23/assets/js/api.js) |
+| `/api/v1/teams?sportId=1` | `Api.getTeams` | Team list · [Source](https://github.com/snapquast73-boop/POSTSSNALRT/blob/f95dff4e96dabfcc456255490fae0f040d616f23/assets/js/api.js) |
+| `/api/v1/people/{personId}` | `Api.getPerson` | Player bio · [Source](https://github.com/snapquast73-boop/POSTSSNALRT/blob/f95dff4e96dabfcc456255490fae0f040d616f23/assets/js/api.js) |
+| `/api/v1/people/{personId}/stats?stats=…&season=…&group=…` | `Api.getPersonStats` (props) | Season stats · [Source](https://github.com/snapquast73-boop/POSTSSNALRT/blob/f95dff4e96dabfcc456255490fae0f040d616f23/assets/js/api.js) |
+| `/api/v1/gameStatus` | `Api.getGameStatus` | Game-status registry (review codes `M*`/`N*`/`IH`) · [Source](https://github.com/snapquast73-boop/POSTSSNALRT/blob/f95dff4e96dabfcc456255490fae0f040d616f23/assets/js/api.js) |
+| `/api/v1/eventTypes` | `Api.getEventTypes` | Event-type registry (`os_ruling_pending_primary` / `os_ruling_pending_prior`) · [Source](https://github.com/snapquast73-boop/POSTSSNALRT/blob/f95dff4e96dabfcc456255490fae0f040d616f23/assets/js/api.js) |
 
 Team logos: `https://www.mlbstatic.com/team-logos/{teamId}.svg` (lazy-loaded;
 dns-prefetched in the HTML head).
