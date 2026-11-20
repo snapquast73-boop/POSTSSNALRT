@@ -1,0 +1,30 @@
+name: Pages browser acceptance
+on:
+  workflow_dispatch:
+  pull_request:
+  deployment_status:
+permissions:
+  contents: read
+jobs:
+  browser:
+    if: github.event_name != 'deployment_status' || (github.event.deployment_status.state == 'success' && github.event.deployment.environment == 'github-pages')
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - run: npm install --prefix "$RUNNER_TEMP/qa" --no-audit --no-fund playwright-core@1.58.2
+      - name: Exercise project site with official historical MLB responses
+        env:
+          DEPLOY_URL: ${{ github.event.deployment_status.environment_url }}
+        run: |
+          base="$DEPLOY_URL"
+          if [[ "$GITHUB_EVENT_NAME" == 'pull_request' ]]; then
+            mkdir -p "$RUNNER_TEMP/web"
+            ln -s "$GITHUB_WORKSPACE" "$RUNNER_TEMP/web/POSTSSNALRT"
+            python3 -m http.server 4173 --bind 127.0.0.1 --directory "$RUNNER_TEMP/web" &
+            base='http://127.0.0.1:4173/POSTSSNALRT/'
+          fi
+          PLAYWRIGHT_MODULE="$RUNNER_TEMP/qa/node_modules/playwright-core/index.mjs" CHROMIUM_EXECUTABLE="$(which google-chrome)" node qa/pages-acceptance.mjs "$base"

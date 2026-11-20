@@ -15,38 +15,25 @@
 (function () {
   'use strict';
 
-  function cell(value) {
-    if (value === null || value === undefined || value === '') return 'not in payload';
-    return String(value);
-  }
-
   function renderMatchupTable(feed) {
     var plays = feed && feed.liveData && feed.liveData.plays;
     var current = plays && plays.currentPlay;
     var matchup = current && current.matchup;
     var count = current && current.count;
-    var runners = (current && current.runners) || [];
-    var bases = { '1B': '—', '2B': '—', '3B': '—' };
-    runners.forEach(function (r) {
-      if (!r) return;
-      if (r.isOnFirst) bases['1B'] = (r.runner && r.runner.fullName) || 'occupied';
-      if (r.isOnSecond) bases['2B'] = (r.runner && r.runner.fullName) || 'occupied';
-      if (r.isOnThird) bases['3B'] = (r.runner && r.runner.fullName) || 'occupied';
-    });
-
+    var offense = feed.liveData?.linescore?.offense;
     var rows = [
       ['Batter', matchup && matchup.batter ? matchup.batter.fullName : null],
       ['Pitcher', matchup && matchup.pitcher ? matchup.pitcher.fullName : null],
-      ['Count (balls–strikes)', count ? count.balls + '–' + count.strikes : null],
+      ['Count (balls–strikes)', count?.balls != null && count?.strikes != null ? count.balls + '–' + count.strikes : null],
       ['Outs', count ? count.outs : null],
-      ['Runner on 1st', bases['1B']],
-      ['Runner on 2nd', bases['2B']],
-      ['Runner on 3rd', bases['3B']],
+      ['Runner on 1st', offense?.first?.fullName],
+      ['Runner on 2nd', offense?.second?.fullName],
+      ['Runner on 3rd', offense?.third?.fullName],
       ['Last play', current && current.result ? current.result.description : null],
     ];
-    var html = '<table><thead><tr><th>Matchup (observed)</th><th>Value</th></tr></thead><tbody>';
+    var html = '<table><thead><tr><th>Matchup (observed)</th><th>Value</th><th>Source</th></tr></thead><tbody>';
     rows.forEach(function (r) {
-      html += '<tr><td>' + UI.esc(r[0]) + '</td><td>' + UI.esc(cell(r[1])) + '</td></tr>';
+      html += UI.sourcedRow(feed, r);
     });
     html += '</tbody></table>';
     html += '<p class="props-note">Observed from the live feed payload only. ' +
@@ -67,10 +54,11 @@
       people.push({ id: matchup.pitcher.id, name: matchup.pitcher.fullName, group: 'pitching' });
     }
     if (!people.length) return;
-    var season = new Date().getFullYear();
+    var season = feed.gameData?.game?.season;
+    if (!season) return;
     var note = document.createElement('p');
     note.className = 'props-note';
-    note.textContent = 'Season stats (official people-stats endpoint) loading…';
+    note.textContent = 'Season stats (official people-stats endpoint) for the game season:';
     host.appendChild(note);
     people.forEach(function (p) {
       Api.getPersonStats(p.id, 'season', season, p.group).then(function (data) {

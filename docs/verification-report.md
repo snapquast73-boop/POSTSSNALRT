@@ -20,16 +20,16 @@ whatever is in the repo root), which is why the breakage was silent.
 
 | Rebuilt file | Contract source (repo) | Verified how |
 | --- | --- | --- |
-| `assets/css/style.css` | Class names in all 5 HTML pages | Link + class audit (T8) |
-| `assets/js/api.js` | `README.md` endpoint list; HTML script order | `node --check`; CI smoke (live) |
-| `assets/js/ui.js` | DOM IDs in `index.html` / `game.html` / `reviews.html` | `node --check`; manual DOM audit |
-| `assets/js/reviews.js` | `README.md` table; `reviews.html` footer | `node tools/review-test.mjs` etc. (fixture tests) |
-| `assets/js/feed-log.js` | `server.mjs` `/api/feed-log` + SSE contract | `node server.mjs` smoke (health, feed-log round-trip) |
-| `assets/js/scoreboard.js` | `index.html` inline handlers + IDs | `node --check`; browser check on Pages |
-| `assets/js/game.js` | `game.html` IDs + tab contract | `node --check`; browser check on Pages |
-| `assets/js/props.js` | `game.html` `#props-wrap` | Honest observed-only scope (F-04) |
-| `assets/js/reviews-feed.js` | `reviews.html` handlers + `sound-lab.html` `ReplayFeed` contract | `node --check`; Sound Lab API surface test |
-| `docs/`, `tools/`, `.github/workflows/`, `assets/audio/` docs | `README.md` links | Link checker (T8) |
+| `assets/css/style.css` | Class names in all 5 HTML pages | Link + class audit (T8) · [Source](https://github.com/snapquast73-boop/POSTSSNALRT/pull/2) |
+| `assets/js/api.js` | `README.md` endpoint list; HTML script order | `node --check`; CI smoke (live) · [Source](https://github.com/snapquast73-boop/POSTSSNALRT/actions/runs/44827999883) |
+| `assets/js/ui.js` | DOM IDs in `index.html` / `game.html` / `reviews.html` | `node --check`; manual DOM audit · [Source](https://github.com/snapquast73-boop/POSTSSNALRT/actions/runs/44827999883) |
+| `assets/js/reviews.js` | `README.md` table; `reviews.html` footer | `node tools/review-test.mjs` etc. (fixture tests) · [Source](https://github.com/snapquast73-boop/POSTSSNALRT/actions/runs/44827999883) |
+| `assets/js/feed-log.js` | `server.mjs` `/api/feed-log` + SSE contract | `node server.mjs` smoke (health, feed-log round-trip) · [Source](https://github.com/snapquast73-boop/POSTSSNALRT/actions/runs/44827999883) |
+| `assets/js/scoreboard.js` | `index.html` inline handlers + IDs | `node --check`; browser check on Pages · [Source](https://github.com/snapquast73-boop/POSTSSNALRT/actions/runs/44827999883) |
+| `assets/js/game.js` | `game.html` IDs + tab contract | `node --check`; browser check on Pages · [Source](https://github.com/snapquast73-boop/POSTSSNALRT/actions/runs/44827999883) |
+| `assets/js/props.js` | `game.html` `#props-wrap` | Honest observed-only scope (F-04) · [Source](https://github.com/snapquast73-boop/POSTSSNALRT/pull/2) |
+| `assets/js/reviews-feed.js` | `reviews.html` handlers + `sound-lab.html` `ReplayFeed` contract | `node --check`; Sound Lab API surface test · [Source](https://github.com/snapquast73-boop/POSTSSNALRT/actions/runs/44827999883) |
+| `docs/`, `tools/`, `.github/workflows/`, `assets/audio/` docs | `README.md` links | Link checker (T8) · [Source](https://github.com/snapquast73-boop/POSTSSNALRT/pull/2) |
 
 ## Official sources (every table row linked)
 
@@ -54,18 +54,18 @@ from `README.md` and were not re-fetched — flagged F-02.
 
 | Check | Result |
 | --- | --- |
-| `node --check` on all 8 `assets/js/*.js`, `server.mjs`, 8 `tools/*.mjs` | All OK |
-| `node tools/review-test.mjs` | 25 passed, 0 failed |
-| `node tools/scoring-change-test.mjs` | 8 passed, 0 failed |
-| `node tools/official-scoring-test.mjs` | 7 passed, 0 failed |
-| `node tools/reviews-feed-test.mjs` | 25 passed, 0 failed |
-| `node tools/replay-feed-render-test.mjs` | 40 passed, 0 failed |
-| `node tools/render-alert-sound.mjs` | 7 passed, 0 failed |
-| `node tools/alert-sound-independent-check.mjs` | 8 passed, 0 failed |
-| **Total fixture checks** | **120 passed, 0 failed** |
-| Internal link check (HTML `src`/`href` + Markdown links) | 13 unique refs, 0 broken |
-| `node server.mjs` smoke (`PORT=4173`) | `/`, all 5 pages, CSS/JS, `/api/health`, `/api/feed-log` GET+POST round-trip, `/api/alert-sound` all 200; unknown path 404 |
-| `node tools/smoke-test.mjs` (live StatsAPI) | Cannot pass in sandbox (TLS blocked) — flagged F-02; runs in CI on push/PR + nightly |
+| `node --check` on all 8 `assets/js/*.js`, `server.mjs`, 8 `tools/*.mjs` | All OK · [Source](https://github.com/snapquast73-boop/POSTSSNALRT/actions/runs/44827999883) |
+| `node tools/review-test.mjs` | 25 passed, 0 failed · [Source](https://github.com/snapquast73-boop/POSTSSNALRT/actions/runs/44827999883) |
+| `node tools/scoring-change-test.mjs` | 8 passed, 0 failed · [Source](https://github.com/snapquast73-boop/POSTSSNALRT/actions/runs/44827999883) |
+| `node tools/official-scoring-test.mjs` | 7 passed, 0 failed · [Source](https://github.com/snapquast73-boop/POSTSSNALRT/actions/runs/44827999883) |
+| `node tools/reviews-feed-test.mjs` | 25 passed, 0 failed · [Source](https://github.com/snapquast73-boop/POSTSSNALRT/actions/runs/44827999883) |
+| `node tools/replay-feed-render-test.mjs` | 40 passed, 0 failed · [Source](https://github.com/snapquast73-boop/POSTSSNALRT/actions/runs/44827999883) |
+| `node tools/render-alert-sound.mjs` | 7 passed, 0 failed · [Source](https://github.com/snapquast73-boop/POSTSSNALRT/actions/runs/44827999883) |
+| `node tools/alert-sound-independent-check.mjs` | 8 passed, 0 failed · [Source](https://github.com/snapquast73-boop/POSTSSNALRT/actions/runs/44827999883) |
+| **Total fixture checks** | **120 passed, 0 failed** · [Source](https://github.com/snapquast73-boop/POSTSSNALRT/pull/2) |
+| Internal link check (HTML `src`/`href` + Markdown links) | 13 unique refs, 0 broken · [Source](https://github.com/snapquast73-boop/POSTSSNALRT/pull/2) |
+| `node server.mjs` smoke (`PORT=4173`) | `/`, all 5 pages, CSS/JS, `/api/health`, `/api/feed-log` GET+POST round-trip, `/api/alert-sound` all 200; unknown path 404 · [Source](https://github.com/snapquast73-boop/POSTSSNALRT/actions/runs/44827999883) |
+| `node tools/smoke-test.mjs` (live StatsAPI) | Cannot pass in sandbox (TLS blocked) — flagged F-02; runs in CI on push/PR + nightly · [Source](https://github.com/snapquast73-boop/POSTSSNALRT/actions/runs/44827999883) |
 
 ## Irregularities
 

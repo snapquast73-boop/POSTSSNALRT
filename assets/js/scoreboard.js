@@ -80,7 +80,7 @@
       card.className = 'game-card';
       card.href = UI.gameUrl(game.gamePk);
 
-      var status = (game.status && game.status.detailedState) || 'Scheduled';
+      var status = (game.status && game.status.detailedState) || '';
       var isLive = UI.isLiveGame(game);
       var isFinal = UI.isFinalGame(game);
       var head = document.createElement('div');
@@ -107,13 +107,13 @@
         img.className = 'team-logo';
         img.alt = '';
         img.loading = 'lazy';
-        img.src = UI.teamLogo(team && team.id);
+        if (team?.team?.id) img.src = UI.teamLogo(team.team.id);
         var abbr = document.createElement('span');
         abbr.className = 'team-abbr';
-        abbr.textContent = UI.teamAbbr(team);
+        abbr.textContent = team?.team?.abbreviation || '';
         var name = document.createElement('span');
         name.className = 'team-name';
-        name.textContent = UI.teamName(team);
+        name.textContent = team?.team?.name || '';
         var sc = document.createElement('span');
         sc.className = 'team-score';
         sc.textContent = score === null ? '–' : String(score);
@@ -144,17 +144,19 @@
     UI.setStatus('Loading schedule for ' + UI.fmtDateLabel(date) + '…');
     UI.showBanner('');
     var scheduleP = Api.getSchedule(date).then(function (data) {
+      if (date !== currentDate()) return;
       state.games = (data && data.dates && data.dates[0] && data.dates[0].games) || [];
       UI.setStatus(state.games.length
         ? state.games.length + ' game' + (state.games.length === 1 ? '' : 's') + ' · updated ' + new Date().toLocaleTimeString()
         : 'No games for ' + UI.fmtDateLabel(date) + '.');
     }, function (err) {
+      if (date !== currentDate()) return;
       state.games = [];
       UI.setStatus('Could not load the schedule: ' + err.message, true);
       UI.showBanner('Schedule unavailable — the MLB StatsAPI did not respond. Check your connection and try again.', true);
     });
     var logP = (window.FeedLog ? FeedLog.load(date).then(function (log) {
-      state.feedLog = log;
+      if (date === currentDate()) state.feedLog = log;
     }) : Promise.resolve());
     return Promise.all([scheduleP, logP]).then(function () {
       renderTabs();

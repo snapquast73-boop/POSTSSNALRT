@@ -3,10 +3,7 @@
 > Reconstruction note: the original `docs/` tree was missing from the upload
 > (see `COORDINATION.md` T6 and `flagged-for-review.html` F-06). This file is
 > an honest reconstruction from `README.md`, `sound-lab.html` and `server.mjs`.
-> Figures below are the reference measurements recorded in `sound-lab.html`
-> (`REF` table) and `README.md`; they were **not** re-measured in the build
-> sandbox (no audio tooling / no network to the reference recordings there).
-> Treat them as recorded reference values, flagged F-05.
+> The original measurement inputs were not uploaded. See the [original Sound Lab](https://github.com/snapquast73-boop/POSTSSNALRT/blob/ad2ea0a19b75252627c1fe80ca6ca5545f3a339f/sound-lab.html) and [Flagged for Review](../flagged-for-review.html).
 
 ## 1. Two paths, one alert
 
@@ -28,30 +25,9 @@ The alert sound has two paths (`assets/js/reviews-feed.js`):
 simultaneous events raises one alert; `playSynthAlertNow()` /
 `playAlertSampleNow()` bypass it for A/B auditioning in the Sound Lab.
 
-## 2. Reference measurements (recorded in `sound-lab.html`)
+## 2. Reference measurements
 
-Measured from a real cash-register cha-ching recording decoded to PCM at
-48 kHz. The Sound Lab recomputes these on any dropped file with the same
-frame sizes / windows / FFT (2048-point Hann, 1024 hop) so numbers are
-directly comparable.
-
-| Measurement | Reference value | Source |
-| --- | --- | --- |
-| Body level (p90, first 0.6 s) | −6.5 dB | `sound-lab.html` `REF.bodyP90` (repo) |
-| Loudest 25 ms frame | −6.3 dB | `sound-lab.html` `REF.loudestFrame` (repo) |
-| Peak | −0.0 dBFS (hard-limited in mastering) | `sound-lab.html` `REF.peak` (repo) |
-| Audible above −40 dB | 1.070 s | `sound-lab.html` `REF.audible40` (repo) |
-| Onset rise (first frame → loudest) | 14.7 dB | `sound-lab.html` `REF.onsetRise` (repo) |
-| Plateau spread (p95−p50, 2 ms) | 1.06 dB | `sound-lab.html` `REF.plateauSpread` (repo) |
-| Attacks (4 ms rises ≥ 6 dB) | 3 | `sound-lab.html` `REF.attacks` (repo) |
-| Spectral centroid of the "cha" | 6033 Hz (second reference: 6219 Hz) | `sound-lab.html` `REF.centroid` (repo) |
-
-README.md records the synthesized fallback's verification against these
-references: spectral centroid **5602 Hz** (references 6219/6033 Hz), flat to
-within **1.4 dB** across 150 Hz–6 kHz, **3 attacks** (references 3 and 10),
-bell on a **2098 Hz prime** struck once, audible **1.33 s** above −40 dB and
-to **2.019 s**. Those fallback figures are recorded claims from the original
-build; they could not be re-verified in the sandbox (flagged F-05).
+The measured-file column is calculated in the browser from the selected audio. Official verification of the reference recording is unavailable. The reference column is intentionally blank; historical figures in the original upload do not validate the reconstructed synth.
 
 ## 3. Why no recording is committed
 

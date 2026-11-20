@@ -108,7 +108,16 @@
     return s === 'Final' || s === 'Completed';
   }
 
+  // Leave absent values blank. Indicate unverified cells in the source column.
+  function sourcedRow(feed, values) {
+    var missing = values.some(v => v == null || v === '');
+    var link = '<a href="https://statsapi.mlb.com/api/v1.1/game/' + encodeURIComponent(feed.gamePk) + '/feed/live">MLB feed</a>';
+    return '<tr>' + values.map(v => '<td>' + esc(v) + '</td>').join('') + '<td>' + link +
+      (missing ? ' · unverified blank' : '') + '</td></tr>';
+  }
+
   var UI = {
+    sourcedRow: sourcedRow,
     $: $, $$: $$, esc: esc,
     toDateStr: toDateStr, todayStr: todayStr, addDays: addDays,
     isValidDateStr: isValidDateStr, fmtDateLabel: fmtDateLabel,

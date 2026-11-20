@@ -26,10 +26,10 @@ https://statsapi.mlb.com):
 
 | Tracked | Source field |
 | --- | --- |
-| ABS pitch challenges | `playEvents[].reviewDetails` (code `MJ`), `gameData.absChallenges` counters |
-| Manager challenges | `play.reviewDetails` (codes `MA`/`MF`/…), `gameData.review` counters |
-| Crew-chief / umpire reviews | `play.reviewDetails`, game status `IH` ("Instant Replay") |
-| Boundary calls | `play.reviewDetails` |
+| ABS pitch challenges | `playEvents[].reviewDetails` (code `MJ`), `gameData.absChallenges` counters · [Source](https://statsapi.mlb.com/api/v1.1/game/822974/feed/live) |
+| Manager challenges | `play.reviewDetails` (codes `MA`/`MF`/…), `gameData.review` counters · [Source](https://statsapi.mlb.com/api/v1/gameStatus) |
+| Crew-chief / umpire reviews | `play.reviewDetails`, game status `IH` ("Instant Replay") · [Source](https://statsapi.mlb.com/api/v1/gameStatus) |
+| Boundary calls | `play.reviewDetails` · [Source](https://statsapi.mlb.com/api/v1/gameStatus) |
 
 Code meanings (`MJ`, `MA`, `MF`, …) are recorded from `README.md`; they could
 not be confirmed from an official source in the build sandbox

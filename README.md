@@ -41,14 +41,14 @@ Static site (GitHub Pages) that polls the **official MLB StatsAPI** and surfaces
 
 | Tracked | Where it appears | Source field (official) |
 | --- | --- | --- |
-| Manager challenges | All feed + Challenges tab + alerts | `play.reviewDetails` (codes `MA`/`MF`/…), `gameData.review` counters |
-| Crew-chief / umpire reviews | All feed + Reviews tab + alerts | `play.reviewDetails`, game status `IH` ("Instant Replay") |
-| Boundary calls | All feed + Boundary Calls tab + alerts | `play.reviewDetails` |
-| **ABS pitch challenges** | **All feed + ABS tab + alerts + live tracking** | `playEvents[].reviewDetails` (code `MJ`), `gameData.absChallenges` counters |
-| "Under review" live status | All feed + Under Review tab + live strip | `gameData.status` codes `M*`/`N*`/`IH` from `GET /api/v1/gameStatus` |
-| Runs at risk (overturn could remove a run) | All feed + Runs at Risk tab + banner + desktop alert | runs credited to the reviewed event in `runners[]` |
-| Official-scorer pending rulings | All feed + Scoring Pending tab + alerts | event types `os_ruling_pending_primary` / `os_ruling_pending_prior` |
-| Official scoring changes (hit ↔ error etc.) | All feed + Scoring Changes tab + alerts | poll-to-poll diff of `result.eventType` / `result.isOut` / `count.outs` / error movements |
+| Manager challenges | All feed + Challenges tab + alerts | `play.reviewDetails` (codes `MA`/`MF`/…), `gameData.review` counters · [Source](https://statsapi.mlb.com/api/v1/gameStatus) |
+| Crew-chief / umpire reviews | All feed + Reviews tab + alerts | `play.reviewDetails`, game status `IH` ("Instant Replay") · [Source](https://statsapi.mlb.com/api/v1/gameStatus) |
+| Boundary calls | All feed + Boundary Calls tab + alerts | `play.reviewDetails` · [Source](https://statsapi.mlb.com/api/v1/gameStatus) |
+| **ABS pitch challenges** | **All feed + ABS tab + alerts + live tracking** | `playEvents[].reviewDetails` (code `MJ`), `gameData.absChallenges` counters · [Source](https://statsapi.mlb.com/api/v1.1/game/822974/feed/live) |
+| "Under review" live status | All feed + Under Review tab + live strip | `gameData.status` codes `M*`/`N*`/`IH` from `GET /api/v1/gameStatus` · [Source](https://statsapi.mlb.com/api/v1/gameStatus) |
+| Runs at risk (overturn could remove a run) | All feed + Runs at Risk tab + banner + desktop alert | runs credited to the reviewed event in `runners[]` · [Source](https://statsapi.mlb.com/api/v1.1/game/822974/feed/live) |
+| Official-scorer pending rulings | All feed + Scoring Pending tab + alerts | event types `os_ruling_pending_primary` / `os_ruling_pending_prior` · [Source](https://statsapi.mlb.com/api/v1/eventTypes) |
+| Official scoring changes (hit ↔ error etc.) | All feed + Scoring Changes tab + alerts | poll-to-poll diff of `result.eventType` / `result.isOut` / `count.outs` / error movements · [Source](https://www.mlb.com/official-information/scoring-changes) |
 
 Everything above is **observed from official payloads only** — nothing is predicted, inferred from score deltas, or zero-filled when a counter is absent. Irregularities (e.g. a used-challenge counter moving backwards) are flagged on the affected rows for review, never corrected.
 
