@@ -1,0 +1,39 @@
+# Smoke CI — fixture tests on every push/PR + live-API check nightly.
+# Source copy: docs/workflows/smoke.yml (kept in sync by hand).
+# GitHub Pages itself uses the legacy build (no workflow needed); this file
+# only runs tests. Live checks need network to statsapi.mlb.com, which CI has.
+name: smoke
+
+on:
+  push:
+  pull_request:
+  schedule:
+    - cron: '17 3 * * *' # nightly live-API check
+
+jobs:
+  fixtures:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Fixture tests (no network)
+        run: |
+          node tools/review-test.mjs
+          node tools/scoring-change-test.mjs
+          node tools/official-scoring-test.mjs
+          node tools/reviews-feed-test.mjs
+          node tools/replay-feed-render-test.mjs
+          node tools/render-alert-sound.mjs
+          node tools/alert-sound-independent-check.mjs
+
+  live:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Live StatsAPI smoke
+        run: node tools/smoke-test.mjs
