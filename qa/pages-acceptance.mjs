@@ -180,6 +180,7 @@ try {
   await page.waitForFunction(() => typeof window.ReplayFeed?.playAlertSound === 'function');
   const spec = await page.evaluate(() => window.ReplayFeed.alertSoundSpec);
   assert(spec && spec.duration > 1.5 && spec.bellStrikes.length === 1, 'alert sound spec missing');
+  await page.locator('#lab-state .lab-pill').first().waitFor({ timeout: 20000 });
   assert((await page.locator('#lab-state .lab-pill').count()) >= 2, 'sound lab state pills missing');
   assertClean('sound lab');
 
