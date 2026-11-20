@@ -180,8 +180,12 @@ try {
     assert.equal(res?.status(), 404, `deep 404 returned ${res?.status()}`);
     const bg = await page.evaluate(() => getComputedStyle(document.body).backgroundColor);
     assert.notEqual(bg, 'rgba(0, 0, 0, 0)', 'custom 404 rendered unstyled at depth');
-    const href = await page.locator('#link-home').getAttribute('href');
-    assert.equal(href, base.pathname + 'index.html', `404 home link resolves to ${href}`);
+    // The nested-404 fix (PR #5) resolves assets and links through <base>.
+    const sheets = await page.evaluate(() => [...document.styleSheets].map((s) => s.href).filter(Boolean));
+    assert(sheets.some((h) => h === base.href + 'assets/css/style.css'),
+      `404 stylesheet not resolved to the project root: ${JSON.stringify(sheets)}`);
+    const home = await page.locator('a', { hasText: 'Back to scoreboard' }).first().evaluate((el) => el.href);
+    assert.equal(home, base.href + 'index.html', `404 home link resolves to ${home}`);
   } else {
     console.log('      404-at-depth check skipped: the static preview server does not serve 404.html (Pages-only behaviour)');
   }
