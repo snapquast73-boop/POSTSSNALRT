@@ -80,7 +80,7 @@
       card.className = 'game-card';
       card.href = UI.gameUrl(game.gamePk);
 
-      var status = (game.status && game.status.detailedState) || 'Scheduled';
+      var status = (game.status && game.status.detailedState) || '';
       var isLive = UI.isLiveGame(game);
       var isFinal = UI.isFinalGame(game);
       var head = document.createElement('div');
@@ -107,13 +107,13 @@
         img.className = 'team-logo';
         img.alt = '';
         img.loading = 'lazy';
-        img.src = UI.teamLogo(team && team.id);
+        if (team?.team?.id) img.src = UI.teamLogo(team.team.id);
         var abbr = document.createElement('span');
         abbr.className = 'team-abbr';
-        abbr.textContent = UI.teamAbbr(team);
+        abbr.textContent = team?.team?.abbreviation || '';
         var name = document.createElement('span');
         name.className = 'team-name';
-        name.textContent = UI.teamName(team);
+        name.textContent = team?.team?.name || '';
         var sc = document.createElement('span');
         sc.className = 'team-score';
         sc.textContent = score === null ? '–' : String(score);

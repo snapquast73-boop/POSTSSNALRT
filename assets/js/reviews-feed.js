@@ -371,7 +371,7 @@
 
   function matchupLabel(game) {
     if (!game || !game.teams) return 'Game ' + (game && game.gamePk);
-    return UI.teamAbbr(game.teams.away) + ' @ ' + UI.teamAbbr(game.teams.home);
+    return UI.teamAbbr(game.teams.away?.team) + ' @ ' + UI.teamAbbr(game.teams.home?.team);
   }
 
   function addEntry(gamePk, review, label) {
@@ -429,6 +429,7 @@
     var plays = (feed.liveData && feed.liveData.plays && feed.liveData.plays.allPlays) || [];
     var snaps = state.snapshots[gamePk] || (state.snapshots[gamePk] = {});
     plays.forEach(function (play, idx) {
+      if (play.about?.isComplete !== true) return;
       var snap = Reviews.snapshotPlay(play);
       if (!snap) return;
       var key = String(play.about ? play.about.atBatIndex : idx);
@@ -466,7 +467,7 @@
       ['away', 'home'].forEach(function (side) {
         var c = counters.manager[side];
         if (c && typeof c.used === 'number') {
-          var gk = 'counter-manager-' + side;
+          var gk = gamePk + '-counter-manager-' + side;
           var prevUsed = state.grace[gk];
           var note = Reviews.flagCounterRegression(prevUsed, c.used, 'Manager challenges used (' + side + ')');
           if (note) addIrregularity(gamePk, note);

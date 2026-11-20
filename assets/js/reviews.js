@@ -49,7 +49,7 @@
       description = detail;
     } else if (detail && typeof detail === 'object') {
       var t = detail.type || {};
-      code = String(t.code || detail.code || '');
+      code = String(detail.reviewType || t.code || detail.code || '');
       description = String(t.description || detail.description || '');
     }
     var text = normText(description);
@@ -62,7 +62,9 @@
       typeKey = 'abs';
       label = 'ABS pitch challenge';
       badgeClass = 'abs';
-    } else if (text.indexOf('manager challenge') !== -1) {
+    } else if (['MS', 'NS'].includes(code)) {
+      typeKey = 'boundary'; label = 'Stadium boundary call'; badgeClass = 'boundary';
+    } else if (/^M[FAUMCPEHODTIBRNGQKLXV]$/.test(code) || text.indexOf('manager challenge') !== -1) {
       typeKey = 'challenge';
       label = 'Manager challenge';
       badgeClass = 'challenge';
@@ -71,7 +73,7 @@
       typeKey = 'boundary';
       label = 'Boundary call review';
       badgeClass = 'boundary';
-    } else if (text.indexOf('crew chief') !== -1 || text.indexOf('umpire') !== -1 ||
+    } else if (/^N[FAWUMCPEHODTIBRNGQKLXJ]$/.test(code) || text.indexOf('crew chief') !== -1 || text.indexOf('umpire') !== -1 ||
                text.indexOf('replay review') !== -1 || text.indexOf('instant replay') !== -1) {
       typeKey = 'review';
       label = 'Crew-chief / umpire review';
@@ -101,9 +103,10 @@
   function extractReviewsFromPlay(play, playIndex) {
     var out = [];
     var seen = {};
-    function add(detail) {
+    function add(detail, suffix) {
       if (!detail || typeof detail !== 'object') return;
       var id = reviewId(detail, play, playIndex);
+      if (detail.id == null) id += suffix;
       if (seen[id]) return;
       seen[id] = true;
       var c = classifyReview(detail);
@@ -123,15 +126,14 @@
         playDescription: play && play.result ? play.result.description : null,
       });
     }
-    var details = (play && play.reviewDetails) || [];
-    for (var i = 0; i < details.length; i++) add(details[i]);
-    var events = (play && play.playEvents) || [];
-    for (var j = 0; j < events.length; j++) {
-      var evDetails = events[j] && events[j].reviewDetails;
-      if (Array.isArray(evDetails)) {
-        for (var k = 0; k < evDetails.length; k++) add(evDetails[k]);
-      }
+    function collect(value, suffix) {
+      if (Array.isArray(value)) value.forEach(function (detail, i) { add(detail, suffix + '-' + i); });
+      else add(value, suffix);
     }
+    collect(play && play.reviewDetails, '');
+    ((play && play.playEvents) || []).forEach(function (event, i) {
+      if (event) collect(event.reviewDetails, '-event-' + (event.playId || (event.index ?? i)));
+    });
     return out;
   }
 
@@ -175,7 +177,7 @@
     }
 
     var status = (feed && feed.gameData && feed.gameData.status) || null;
-    var statusCode = status && status.abstractGameCode ? String(status.abstractGameCode) : '';
+    var statusCode = status ? String(status.statusCode || status.abstractGameCode || '') : '';
     var underReview = {
       active: isUnderReviewStatus(statusCode),
       statusCode: statusCode || null,

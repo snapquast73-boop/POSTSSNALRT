@@ -36,6 +36,7 @@ try {
   await page.locator('#date-picker').fill(date);
   const link = page.locator(`#game-list a[href*="gamePk=${game.gamePk}"]`).first();
   await link.waitFor();
+  for (const side of ['away', 'home']) assert((await link.innerText()).includes(game.teams[side].team.name));
   const gamePage = new URL(await link.getAttribute('href'), page.url());
   assert.equal(gamePage.pathname, new URL('game.html', base).pathname);
   const [feed] = await Promise.all([
@@ -48,6 +49,20 @@ try {
   await page.locator('#header-home').getByText(game.teams.home.team.name, {exact:false}).first().waitFor();
   await page.locator('[data-tab="boxscore"]').click();
   await page.locator('#panel-boxscore').waitFor();
+  for (const row of await page.locator('#boxscore-wrap tbody tr, #linescore-wrap tbody tr, #props-wrap tbody tr').all()) {
+    assert.equal(await row.locator('a').getAttribute('href'), feedUrl.href);
+  }
+  // Check pitch challenges against MLB's real objects, not our fixture schema.
+  const absPk = 822974;
+  const [absRes] = await Promise.all([
+    page.waitForResponse(r => r.ok() && r.url() === `${stats}/api/v1.1/game/${absPk}/feed/live`),
+    open(`game.html?gamePk=${absPk}`)
+  ]);
+  const plays = (await absRes.json()).liveData.plays.allPlays;
+  const absCount = plays.flatMap(p => [p, ...p.playEvents]).filter(p => p.reviewDetails?.reviewType === 'MJ').length;
+  assert(absCount > 1, 'Reference game no longer contains multiple MJ records');
+  await page.locator('[data-tab="reviews"]').click();
+  assert.equal(await page.locator('#reviews-wrap .badge.abs').count(), absCount);
   await open('reviews.html');
   const replayFetch = page.waitForResponse(res => res.ok() && new URL(res.url()).origin === stats && new URL(res.url()).pathname === feedUrl.pathname);
   await page.locator('#date-picker').fill(date);

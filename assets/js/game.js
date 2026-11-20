@@ -50,9 +50,9 @@
     UI.$('header-meta').textContent =
       (status.abstractGameState || '') + (gd.datetime && gd.datetime.dateTime ? ' · ' + gd.datetime.dateTime : '');
     var decisions = [];
-    if (linescore && linescore.decisions) {
+    if (feed.liveData && feed.liveData.decisions) {
       ['winner', 'loser', 'save'].forEach(function (k) {
-        var p = linescore.decisions[k];
+        var p = feed.liveData.decisions[k];
         if (p && p.fullName) decisions.push(k + ': ' + p.fullName);
       });
     }
@@ -86,17 +86,10 @@
     }
     var html = '<table class="score-table"><thead><tr><th></th>';
     ls.innings.forEach(function (inn) { html += '<th>' + UI.esc(inn.num) + '</th>'; });
-    html += '<th>R</th><th>H</th><th>E</th></tr></thead><tbody>';
+    html += '<th>R</th><th>H</th><th>E</th><th>Source</th></tr></thead><tbody>';
     ['away', 'home'].forEach(function (side) {
       var team = ls.teams[side] || {};
-      html += '<tr><td>' + UI.esc(team.abbreviation || side) + '</td>';
-      ls.innings.forEach(function (inn) {
-        var v = inn[side] && inn[side].runs !== undefined ? inn[side].runs : '–';
-        html += '<td>' + UI.esc(v) + '</td>';
-      });
-      html += '<td>' + UI.esc(team.runs !== undefined ? team.runs : '–') + '</td>' +
-        '<td>' + UI.esc(team.hits !== undefined ? team.hits : '–') + '</td>' +
-        '<td>' + UI.esc(team.errors !== undefined ? team.errors : '–') + '</td></tr>';
+      html += UI.sourcedRow(feed, [feed.gameData?.teams?.[side]?.name, ...ls.innings.map(inn => inn[side]?.runs), team.runs, team.hits, team.errors]);
     });
     host.innerHTML = html + '</tbody></table>';
   }
@@ -153,16 +146,12 @@
       var names = Object.keys(players);
       if (!names.length) return;
       html += '<h3>' + UI.esc(team.team ? team.team.name : side) + '</h3>' +
-        '<table class="score-table"><thead><tr><th>Player</th><th>AB</th><th>R</th><th>H</th><th>RBI</th></tr></thead><tbody>';
+        '<table class="score-table"><thead><tr><th>Player</th><th>AB</th><th>R</th><th>H</th><th>RBI</th><th>Source</th></tr></thead><tbody>';
       names.forEach(function (key) {
         var p = players[key] || {};
         var bat = p.stats && p.stats.batting;
         if (!bat) return;
-        html += '<tr><td>' + UI.esc(p.person ? p.person.fullName : key) + '</td>' +
-          '<td>' + UI.esc(bat.atBats !== undefined ? bat.atBats : '–') + '</td>' +
-          '<td>' + UI.esc(bat.runs !== undefined ? bat.runs : '–') + '</td>' +
-          '<td>' + UI.esc(bat.hits !== undefined ? bat.hits : '–') + '</td>' +
-          '<td>' + UI.esc(bat.rbi !== undefined ? bat.rbi : '–') + '</td></tr>';
+        html += UI.sourcedRow(feed, [p.person?.fullName, bat.atBats, bat.runs, bat.hits, bat.rbi]);
       });
       html += '</tbody></table>';
     });
@@ -212,7 +201,7 @@
 
   function switchTab(tab) {
     state.tab = tab;
-    UI.$$('tab-btn').forEach(function (b) {
+    UI.$$('.tab-btn').forEach(function (b) {
       b.classList.toggle('tab-on', b.getAttribute('data-tab') === tab);
     });
     ['plays', 'boxscore', 'props', 'reviews'].forEach(function (t) {
@@ -270,7 +259,7 @@
 
   document.addEventListener('DOMContentLoaded', function () {
     state.gamePk = gamePkFromUrl();
-    UI.$$('tab-btn').forEach(function (b) {
+    UI.$$('.tab-btn').forEach(function (b) {
       b.addEventListener('click', function () { switchTab(b.getAttribute('data-tab')); });
     });
     var refresh = UI.$('refresh-btn');
