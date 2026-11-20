@@ -92,7 +92,8 @@ try {
     return cards.length > 0 && cards.every((c) => (c.querySelector('.team-abbr')?.textContent || '').trim().length > 0);
   }, null, { timeout: 20000 });
   for (const card of await page.locator('#game-list .game-card').all()) {
-    const ids = (await card.locator('a').getAttribute('href') || '').match(/gamePk=(\d+)/);
+    // The card itself is the <a class="game-card">, so read its own href.
+    const ids = (await card.getAttribute('href') || '').match(/gamePk=(\d+)/);
     if (!ids) continue;
     const g = games.find((x) => String(x.gamePk) === ids[1]);
     if (!g) continue;
