@@ -101,3 +101,18 @@ reproducible (rebuilt honestly); F-07 upstream parity unverifiable (404).
 - 1016822d — Preserved PR #7 release records during a second additive board conflict. An attempted pull/rebase after the integration merge replayed the board conflict; aborted rebase to preserve both histories.
 
 - 3f78f25b release: [PR #5](https://github.com/snapquast73-boop/POSTSSNALRT/pull/5) merged (`434c7a7`); concurrent board merges superseded its first deployment. The [combined main deployment](https://github.com/snapquast73-boop/POSTSSNALRT/actions/runs/44829262037) succeeded at `8756be8` with the repair included.
+
+## Session 31861034 — claim (2026-11-20, branch `arena/31861034-postssnalrt`)
+
+Session ID `31861034`. Session branch is Arena-assigned (`arena/31861034-postssnalrt`); this session cannot create other branches, so all work is committed to this branch and merged to `main` through a PR from it.
+
+Claimed (non-overlapping with the in-progress V1–V3 claim of `a35ded9a`, PR #9, which owns live-site functional repair in `assets/js/*`, `404.html`, `qa/`, `tools/live-data-check.mjs`):
+
+| ID | Task | Status | Owner | Files touched |
+|----|------|--------|-------|---------------|
+| S1 | Source and link audit of every official URL cited in the repo; record fetch result, date and the claim each one supports | in progress | 31861034 | `docs/source-audit.md` (new) |
+| S2 | Line-by-line check of the deployed game table (linescore) against the official MLB linescore endpoint | in progress | 31861034 | `docs/source-audit.md` (section) |
+| S3 | Reference-parity record: deployed pages vs the two reference pages named in the request, and the unreachable upstream | in progress | 31861034 | `docs/reference-parity.md` (new) |
+| S4 | Integration: PR from this branch to `main`, CI, Pages deploy check, record in this file | pending | 31861034 | `COORDINATION.md` (append only) |
+
+Not touched by this session: `assets/js/**`, `404.html`, `index.html`, `game.html`, `reviews.html`, `sound-lab.html`, `flagged-for-review.html`, `README.md`, `qa/**`, `tools/**`, `.github/**`. Requests for changes in those files are logged below instead of being made.
