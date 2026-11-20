@@ -6,14 +6,22 @@
  * Run: node tools/render-alert-sound.mjs && node tools/alert-sound-independent-check.mjs
  */
 import fs from 'node:fs';
+import { spawnSync } from 'node:child_process';
 
 let pass = 0, fail = 0;
 const check = (name, cond) => { if (cond) { pass++; console.log('  ok  ' + name); } else { fail++; console.log('  FAIL ' + name); } };
 
 console.log('alert-sound-independent-check');
 if (!fs.existsSync('alert-sound.wav')) {
-  console.log('  FAIL alert-sound.wav missing — run tools/render-alert-sound.mjs first');
-  process.exit(1);
+  // Render the reference WAV first so this check is order-independent (CI used
+  // to run the renderer in a previous step, so running the file on its own —
+  // or from a different cwd order — failed for no functional reason).
+  console.log('  ..  alert-sound.wav missing — rendering it with tools/render-alert-sound.mjs');
+  const rendered = spawnSync(process.execPath, ['tools/render-alert-sound.mjs'], { stdio: 'inherit' });
+  if (rendered.status !== 0 || !fs.existsSync('alert-sound.wav')) {
+    console.log('  FAIL alert-sound.wav could not be rendered — run tools/render-alert-sound.mjs and read its output');
+    process.exit(1);
+  }
 }
 const buf = fs.readFileSync('alert-sound.wav');
 check('RIFF header', buf.toString('ascii', 0, 4) === 'RIFF');

@@ -21,7 +21,8 @@
   <main class="flagged-main">
     <h1>🚩 Flagged for Review</h1>
     <p>
-      Irregularities and unverified items from the repair of this repo (2026-11-20).
+      Irregularities and unverified items from the repair of this repo (2026-11-20),
+      including the post-release pass that verified the deployed site in a real browser.
       Every row links to an official source for manual review. Where a value could
       not be confirmed from an official source it is left blank and flagged —
       never inferred or filled in. These items do not block the site going
@@ -47,9 +48,10 @@
         </tr>
         <tr>
           <td>F-03</td>
-          <td>Verified against MLB's official <code>/api/v1/gameStatus</code> registry (fetched 2026-11-20): code <code>MJ</code> = "Player challenge: Pitch Result" — the site classifies it as ABS/abs (the ABS pitch challenge). The registry also distinguishes the replay <code>statusCode</code> from the <code>abstractGameCode</code> (MJ: statusCode <code>MJ</code>, abstractGameCode <code>L</code>; MF: statusCode <code>MF</code>, abstractGameCode <code>L</code>); the site reads <code>statusCode</code> first and matches M/N prefixes for "Under review". Code-list cross-check vs the registry: all 23 MLB M codes are covered by the site (21 manager codes + <code>MS</code> as boundary + <code>MJ</code> as abs); all 23 MLB N codes are covered (22 crew-chief + <code>NS</code> as boundary). Game 822974 feed/live contains <code>reviewDetails</code> objects with <code>reviewType: "MJ"</code> on plays and within <code>playEvents</code> — the site scans both locations in <code>Reviews.extractReviewsFromPlay</code> and dedupes by payload id. Fixture coverage: <code>tools/review-test.mjs</code> 25/25, <code>tools/reviews-feed-test.mjs</code> 25/25. Not verified: exact live-overturn timing (design: one alert per poll + 2.5 s cooldown).</td>
+          <td>Verified against MLB's official <code>/api/v1/gameStatus</code> registry (fetched 2026-11-20): code <code>MJ</code> = "Player challenge: Pitch Result" — the site classifies it as ABS/abs (the ABS pitch challenge). The registry also distinguishes the replay <code>statusCode</code> from the <code>abstractGameCode</code> (MJ: statusCode <code>MJ</code>, abstractGameCode <code>L</code>; MF: statusCode <code>MF</code>, abstractGameCode <code>L</code>); the site reads <code>statusCode</code> first and matches M/N prefixes for "Under review". Code-list cross-check vs the registry: all 23 MLB M codes are covered by the site (21 manager codes + <code>MS</code> as boundary + <code>MJ</code> as abs); all 23 MLB N codes are covered (22 crew-chief + <code>NS</code> as boundary). Game 822974 feed/live contains <code>reviewDetails</code> objects with <code>reviewType: "MJ"</code> on plays and within <code>playEvents</code> — the site scans both locations in <code>Reviews.extractReviewsFromPlay</code> and dedupes by payload id. Fixture coverage: <code>tools/review-test.mjs</code> 25/25, <code>tools/reviews-feed-test.mjs</code> 25/25. <code>tools/live-data-check.mjs</code> re-asserts the registry cross-check against live payloads on every CI run, so a code-list drift fails the build. Not verified: exact live-overturn timing (design: one alert per poll + 2.5 s cooldown).</td>
           <td>The restored reader handles both locations. See the <a href="https://statsapi.mlb.com/api/v1.1/game/822974/feed/live">official game feed</a> and <a href="https://statsapi.mlb.com/api/v1/gameStatus">status registry</a>.</td>
           <td><a href="https://www.mlb.com/glossary/rules/replay-review">Replay Review glossary</a> · <a href="https://www.mlb.com/glossary/rules/manager-challenge">Manager Challenge glossary</a> · <a href="https://www.mlb.com/official-information/scoring-changes">Scoring Changes log</a> · <a href="https://statsapi.mlb.com/api/v1/gameStatus">Game-status registry (source of the MJ / M / N codes)</a></td>
+
         </tr>
         <tr>
           <td>F-04</td>
@@ -80,6 +82,25 @@
           <td>Upstream repo <code>buffedlizard55-lab/MLB-Live-PBP</code> returns 404 via the GitHub API and its Pages site could not be fetched, so verbatim parity with upstream cannot be verified.</td>
           <td>Parity is claimed only where the surviving contracts prove it (HTML IDs/handlers, <code>server.mjs</code> API, Sound Lab <code>ReplayFeed</code> surface, README tables). Everything else is flagged above.</td>
           <td><a href="https://github.com/snapquast73-boop/POSTSSNALRT/blob/main/SOURCE-PROVENANCE.md">Source search and evidence</a> · <a href="https://github.com/snapquast73-boop/POSTSSNALRT/blob/ad2ea0a19b75252627c1fe80ca6ca5545f3a339f/README.md">Original upload naming the site</a></td>
+        </tr>
+
+        <tr>
+          <td>F-09</td>
+          <td><strong>Addition, not a recovered upstream behaviour:</strong> when the official schedule has no games on the default "today" date (true for this whole offseason — <a href="https://statsapi.mlb.com/api/v1/schedule?sportId=1&date=2026-11-20">2026-11-20 returns <code>{"dates":[]}</code></a>, last 2026 slate <a href="https://statsapi.mlb.com/api/v1/schedule?sportId=1&startDate=2026-10-20&endDate=2026-11-20">2026-10-28</a>), the scoreboard and replay feed open the most recent real slate once and explain it in a banner.</td>
+          <td>One-time fallback on the default view only; explicit date navigation still shows exactly the date you pick; the banner names both dates. Remove it if you would rather see the empty state. Verified in a real browser by <code>qa/pages-acceptance.mjs</code>, which only exercises it when today is genuinely empty (logged when it is not).</td>
+          <td><a href="https://statsapi.mlb.com/api/v1/schedule?sportId=1&date=2026-11-20">Official schedule (empty day)</a> · <a href="https://statsapi.mlb.com/api/v1/schedule?sportId=1&startDate=2026-10-20&endDate=2026-11-20">Official schedule range (last slate)</a></td>
+        </tr>
+        <tr>
+          <td>F-10</td>
+          <td><strong>Post-deploy browser acceptance never actually ran.</strong> The previous workflow fired on <code>deployment_status</code>; its queued and in-progress events were skipped by the job condition (runs 44828791518, 44828796450) and the <code>success</code> event produced no run, while <code>workflow_dispatch</code> had no base URL (empty value → invalid URL). The only passing acceptance run used a locally served copy.</td>
+          <td>Replaced with a <code>workflow_run</code> on <code>pages build and deployment</code> for <code>main</code> plus a defaulted <code>workflow_dispatch</code>, so the public URL is exercised automatically after every deploy; the harness now also asserts official team abbreviations, feed labels, ABS counts, table source links, page errors and the nested-404 fix.</td>
+          <td><a href="https://github.com/snapquast73-boop/POSTSSNALRT/actions?query=workflow%3A%22Pages+browser+acceptance%22">Pages browser acceptance runs</a> · <a href="https://api.github.com/repos/snapquast73-boop/POSTSSNALRT/deployments">Deployments API</a> · <a href="https://docs.github.com/en/pages">GitHub Pages docs</a></td>
+        </tr>
+        <tr>
+          <td>F-11</td>
+          <td><strong>Runs at Risk is attribution, not prediction.</strong> The flag is set only when the official payload credits a scoring movement to the reviewed event (<code>runners[].details.isScoringEvent</code> / <code>playIndex</code>); the payload never says what replay actually removed, so a review that has already been resolved on such a play still shows the flag, and a review of a play with no run credited never does.</td>
+          <td>Re-evaluated on every poll for every tracked review (previously only for a brand-new row), decoupled from the game's "under review" status for the flag itself; the desktop notification stays limited to an active review on the reviewed play. Parity with the payload is asserted for real games by <code>tools/live-data-check.mjs</code>.</td>
+          <td><a href="https://statsapi.mlb.com/api/v1.1/game/822974/feed/live">Official game feed (runners[].details)</a> · <a href="https://www.mlb.com/glossary/rules/replay-review">Replay Review glossary</a></td>
         </tr>
       </tbody>
     </table>

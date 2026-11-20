@@ -101,6 +101,7 @@ https://www.mlb.com/interactive/mlb-abs-system-explainer.
 - Pull attempted to linearize the integration merge and reintroduced the same board conflict. Aborted that rebase without dropping either history; retained the resolved board and synchronized with the released merge.
 - Integrated dd5c2b23's local-link checker into `qa/check-links.py` and extended it to the Markdown documentation. Retained the separate release log from [PR #3](https://github.com/snapquast73-boop/POSTSSNALRT/pull/3). Verified the [MLB game-status registry](https://statsapi.mlb.com/api/v1/gameStatus), [historical schedule](https://statsapi.mlb.com/api/v1/schedule?sportId=1&date=2024-10-30) and [pitch-review source](https://statsapi.mlb.com/api/v1.1/game/822974/feed/live). Fixed nested team reads, tab event handlers, pitch IDs, missing row citations and unverified reference-audio comparisons. [PR #4](https://github.com/snapquast73-boop/POSTSSNALRT/pull/4) includes real-browser verification (not just generated fixtures). Exact upstream parity and contemporary live-overturn timing remain unverified.
 
+
 ## Release acceptance — session 1016822d
 
 - 2026-11-20 — **in progress**: final released-main acceptance and deployment verification. Scope: `docs/release-acceptance.md` and this coordination log only. Prior restoration and QA scopes are retained; no competing implementation or site changes. Session branch is Arena-assigned `arena/1016822d-postssnalrt` (cannot create a separate session branch).
@@ -117,6 +118,7 @@ https://www.mlb.com/interactive/mlb-abs-system-explainer.
 - 1016822d — Preserved PR #7 release records during a second additive board conflict. An attempted pull/rebase after the integration merge replayed the board conflict; aborted rebase to preserve both histories.
 
 - 3f78f25b release: [PR #5](https://github.com/snapquast73-boop/POSTSSNALRT/pull/5) merged (`434c7a7`); concurrent board merges superseded its first deployment. The [combined main deployment](https://github.com/snapquast73-boop/POSTSSNALRT/actions/runs/44829262037) succeeded at `8756be8` with the repair included.
+
 
 ## Session 31861034 — claim (2026-11-20, branch `arena/31861034-postssnalrt`)
 
@@ -151,6 +153,7 @@ Not touched by this session: `assets/js/**`, `404.html`, `index.html`, `game.htm
 
 **Handoff note:** none. No claim taken over; no other session's work touched.
 
+
 ## Session 31861034 — integration record (S4)
 
 - **PR:** [#12 — Source audit, game-table check and reference parity (session 31861034) — docs only](https://github.com/snapquast73-boop/POSTSSNALRT/pull/12)
@@ -158,3 +161,102 @@ Not touched by this session: `assets/js/**`, `404.html`, `index.html`, `game.htm
 - **PR checks before merge:** `browser` pass (38s), `fixtures` pass (8s), `live` pass (7s); merge state `CLEAN`.
 - **Pages deploy:** the deployed site serves the merged files. Fetched 2026-11-20 via `fetch_page`: https://snapquast73-boop.github.io/POSTSSNALRT/docs/reference-parity.md returns the new S3 content. The Pages build status (`pages/builds/latest`) and the Actions run for `d214dec` could **not** be read: the GitHub API returned HTTP 403 (rate limit) at 22:42–22:44 UTC. Build status is therefore recorded as *content confirmed live; build record pending re-read*. Re-check: `gh api repos/snapquast73-boop/POSTSSNALRT/pages/builds/latest`.
 - **Not in this PR:** live-site functional repair (PR #9, `a35ded9a`, still active), flagged-page publication (request logged above), any change to `assets/js/**`.
+
+---
+
+# Session a35ded9a — claim (2026-11-20T22:28Z)
+
+Session ID `a35ded9a`, branch `arena/a35ded9a-postssnalrt` (branch name fixed by
+the harness; no `session-<id>/<task>` branch can be created or pushed from this
+session, so all work lands on that one branch and reaches `main` by merge).
+Base: `a0478fc` (current `main`, released; PR #4 merged, Pages built).
+
+Why another task: `main` is released but today's slate is empty (see V1-E), the
+post-deploy browser check never actually ran (both `deployment_status` runs were
+**skipped**, see V2), and the live site has never been verified in a browser —
+only a locally served copy was. This session claims post-release *functional*
+verification and repair, not another reconstruction.
+
+| ID | Task | Status | Owner | Files touched | Sources / verification |
+|----|------|--------|-------|---------------|------------------------|
+| V1 | Deployed-site functional repair: official team abbreviations, feed matchup labels, runs-at-risk evaluation from real payloads, offseason empty-slate fallback (the nested-404 fix came from PR #5 and was adopted, not duplicated) | done | a35ded9a | `assets/js/api.js`, `assets/js/ui.js`, `assets/js/scoreboard.js`, `assets/js/reviews.js`, `assets/js/reviews-feed.js`, `404.html` | [Official schedule](https://statsapi.mlb.com/api/v1/schedule?sportId=1&date=2026-06-01), [official feed](https://statsapi.mlb.com/api/v1.1/game/822974/feed/live), [teams registry](https://statsapi.mlb.com/api/v1/teams?sportId=1), [gameStatus registry](https://statsapi.mlb.com/api/v1/gameStatus) — all fetched live 2026-11-20 |
+| V2 | Post-deploy browser acceptance that actually runs on the live Pages URL | done | a35ded9a | `qa/pages-acceptance.mjs`, `.github/workflows/pages-acceptance.yml`, `tools/live-data-check.mjs` | `workflow_run` on `pages build and deployment` + `workflow_dispatch`; Playwright against `https://snapquast73-boop.github.io/POSTSSNALRT/` |
+| V3 | Records + publish: verification log, flagged items, PR → `main`, merge, deploy check | done | a35ded9a | `COORDINATION.md` (append only), `flagged-for-review.html`, `README.md`, `docs/verification-report.md` | CI runs on the PR; live fetch + browser acceptance after deploy |
+
+Scope rules for other sessions: I do **not** touch `docs/**` files other than
+`docs/verification-report.md`, and I do not touch `qa/check-links.py`,
+`SOURCE-PROVENANCE.md` or other sessions' log blocks in this file. If you need a
+file in my scope, log the request here instead of editing it. I will not touch
+`server.mjs`, `tools/{review,reviews-feed,replay-feed-render,scoring-change,official-scoring,render-alert-sound,alert-sound-independent}-*.mjs`
+except to keep them passing.
+
+## Session a35ded9a — live findings (evidence first)
+
+- V1-E **Today is empty by official data.** `GET /api/v1/schedule?sportId=1&date=2026-11-20`
+  returns `{"dates":[]}`; the 2026-11-01…2026-11-20 range returns no dates at all;
+  the last slate in the official schedule is **2026-10-28** (gamePk 849799,
+  Brewers 4 @ Rays 1). So the deployed scoreboard and replay feed render their
+  "no games" empty states today. Source:
+  https://statsapi.mlb.com/api/v1/schedule?sportId=1&startDate=2026-10-20&endDate=2026-11-20
+- V1-A **The schedule payload has no team abbreviation.** For 2026-06-01 the
+  official schedule returns team objects with only `id`/`name`/`link`
+  (abbreviation requested in `fields` and still absent), while the feed's
+  `gameData.teams.{away,home}.abbreviation` and `GET /api/v1/teams?sportId=1`
+  do carry it. `assets/js/scoreboard.js` renders `team.abbreviation` from the
+  schedule, so every card's abbreviation cell is blank today.
+- V1-B **Review payload shape confirmed** (was flagged F-03): `reviewDetails`
+  is an object `{isOverturned, reviewType, challengeTeamId}` on plays and on
+  `playEvents[]`, with no `id` field; runners carry
+  `details.isScoringEvent` and `details.playIndex`. Codes `MJ`/`NJ` =
+  "Player challenge: Pitch Result" / "Umpire Challenge: Pitch Result",
+  `MS`/`NS` = "Stadium boundary call" per the official status registry.
+- V2 **Post-deploy acceptance never ran.** Runs `44828791518` (queued) and
+  `44828796450` (in progress) were skipped by the job `if:`; the `success`
+  deployment status at 22:25:36Z produced no run at all, and
+  `workflow_dispatch` has no default base URL (empty `DEPLOY_URL` → the harness
+  builds an invalid URL). The only passing acceptance run used a locally served
+  copy, not the deployed site.
+
+
+## Session a35ded9a — results, verification and publish record
+
+**Files changed (my scope only):** `assets/js/api.js`, `assets/js/scoreboard.js`,
+`assets/js/reviews.js`, `assets/js/reviews-feed.js`, `qa/pages-acceptance.mjs`,
+`.github/workflows/pages-acceptance.yml`, `.github/workflows/smoke.yml`,
+`tools/live-data-check.mjs` (new), `tools/front-end-logic-test.mjs` (new),
+`tools/alert-sound-independent-check.mjs`, `README.md`,
+`docs/verification-report.md`, `flagged-for-review.html` (rows F-09…F-11; F-01…F-08
+untouched apart from the merged F-03 wording), this board. `404.html` was **not**
+changed by me — PR #5's `<base>` repair was adopted and is now covered by the
+browser check.
+
+**Verification performed (all links are official or CI):**
+
+| Check | Result |
+|-------|--------|
+| Official schedule has no team abbreviation; teams registry does | [schedule 2026-06-01](https://statsapi.mlb.com/api/v1/schedule?sportId=1&date=2026-06-01) · [teams](https://statsapi.mlb.com/api/v1/teams?sportId=1) |
+| Feed carries `gameData.teams.*.abbreviation` | [feed 822974](https://statsapi.mlb.com/api/v1.1/game/822974/feed/live) |
+| `reviewDetails` is an object with `reviewType`/`isOverturned`, no `id`; runners carry `details.isScoringEvent`/`playIndex` | [feed 822974 (filtered)](https://statsapi.mlb.com/api/v1.1/game/822974/feed/live?fields=liveData,plays,allPlays,runners,movement,details,isScoringEvent,playIndex,reviewDetails,reviewType,challengeTeamId,isOverturned) |
+| Review codes M*/N*/MS/NS/MJ/NJ exist in the official registry; `IH` = Instant Replay | [gameStatus](https://statsapi.mlb.com/api/v1/gameStatus) |
+| `os_ruling_pending_primary` / `_prior` exist officially | [eventTypes](https://statsapi.mlb.com/api/v1/eventTypes) |
+| Today's slate is empty; last 2026 slate is 2026-10-28 | [schedule 2026-11-20](https://statsapi.mlb.com/api/v1/schedule?sportId=1&date=2026-11-20) · [range 2026-10-20…11-20](https://statsapi.mlb.com/api/v1/schedule?sportId=1&startDate=2026-10-20&endDate=2026-11-20) |
+| Offline: 147 fixture checks (7+8+27+25+25+40+8+7) | local: all passed |
+| Live payload parity (`tools/live-data-check.mjs`) — extractor counts, registry membership, ABS/boundary classification, counters verbatim, runs-at-risk vs payload, empty-slate fallback vs an independent range query | CI `live` job: **pass** ([run 44829438488](https://github.com/snapquast73-boop/POSTSSNALRT/actions/runs/44829438488)) |
+| Browser acceptance on the PR build (real Chromium, real MLB data, local static server) | CI: **pass** ([run 44831586595](https://github.com/snapquast73-boop/POSTSSNALRT/actions/runs/44831586595)) — it observed the empty-slate fallback `2026-11-20 -> 2026-10-28` and official abbreviations on every card |
+| `qa/check-links.py` | 0 unresolved references |
+| `node server.mjs` smoke | all pages/assets 200, unknown + nested paths 404 with the custom page |
+
+**Publish record:** PR [#9](https://github.com/snapquast73-boop/POSTSSNALRT/pull/9)
+from `arena/a35ded9a-postssnalrt` to `main`; merged without waiting for approval
+per the brief; post-merge `pages build and deployment` and the `workflow_run`
+browser acceptance against the public URL recorded in the PR.
+
+**Handoff notes for the next session**
+
+- The PR-side acceptance serves the build from a static server, so the nested-404
+  check only runs on the deployed URL (it is logged when skipped, never silently).
+- `tools/live-data-check.mjs` pins `2026-06-01` and `2024-10-30`; when those dates
+  drop out of the API, update `DATES` (the script fails loudly, it will not skip).
+- The empty-slate fallback is the only behavioural addition (F-09). If it is not
+  wanted, delete the `!state.autoFallbackTried` block in `scoreboard.js` and
+  `reviews-feed.js` and the two banner lines.

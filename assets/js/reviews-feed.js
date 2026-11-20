@@ -66,6 +66,8 @@
     nextPoll: 0,
     unsubscribe: null,
     booted: false,
+    notice: '',              // persistent banner (empty-slate fallback)
+    autoFallbackTried: false,
   };
 
   /* ============================================================ sound */
@@ -375,6 +377,20 @@
     return UI.teamAbbr(game.teams.away?.team) + ' @ ' + UI.teamAbbr(game.teams.home?.team);
   }
 
+  /**
+   * Matchup label from the live feed itself. gameData.teams.{away,home}
+   * carry the official `abbreviation` (verified 2026-11-20 on
+   * https://statsapi.mlb.com/api/v1.1/game/822974/feed/live), which the
+   * schedule does not. Falls back to the schedule label when absent.
+   */
+  function feedLabel(feed, fallback) {
+    var teams = feed && feed.gameData && feed.gameData.teams;
+    var away = teams && teams.away ? teams.away.abbreviation : '';
+    var home = teams && teams.home ? teams.home.abbreviation : '';
+    if (away && home) return away + ' @ ' + home;
+    return fallback;
+  }
+
   function addEntry(gamePk, review, label) {
     var now = Date.now();
     var key = gamePk + ':' + (review.id || review.atBatIndex || '');
@@ -406,7 +422,7 @@
 
   function processFeed(game, feed) {
     var gamePk = game.gamePk;
-    var label = matchupLabel(game);
+    var label = feedLabel(feed, matchupLabel(game));
     state.gameLabels[gamePk] = label;
     var extracted = Reviews.extractReviewsFromFeed(feed);
     var newEntries = [];
@@ -477,14 +493,32 @@
       });
     }
 
-    // Runs-at-risk desktop notifications for new entries.
-    newEntries.forEach(function (entry) {
-      var play = plays.filter(function (p) {
-        return String(p.about && p.about.atBatIndex) === String(entry.review.atBatIndex);
-      })[0];
-      if (extracted.underReview.active && play && play.about?.atBatIndex === feed.liveData?.plays?.currentPlay?.about?.atBatIndex &&
-          Reviews.runsAtRisk(play, entry.review)) {
-        entry.review.runsAtRisk = true;
+    // Runs-at-risk: re-evaluated for EVERY tracked review of this game on
+    // every poll (not only brand-new rows), because a review's status and the
+    // scoring attribution can arrive after the row was first logged. The test
+    // itself is Reviews.runsAtRisk(), which reads the official
+    // runners[].details.isScoringEvent / playIndex fields.
+    var playsByAtBat = {};
+    plays.forEach(function (p) {
+      if (p && p.about && p.about.atBatIndex !== undefined && p.about.atBatIndex !== null) {
+        playsByAtBat[String(p.about.atBatIndex)] = p;
+      }
+    });
+    var currentAtBat = feed.liveData && feed.liveData.plays && feed.liveData.plays.currentPlay &&
+      feed.liveData.plays.currentPlay.about ? feed.liveData.plays.currentPlay.about.atBatIndex : null;
+    state.entries.forEach(function (entry) {
+      if (entry.gamePk !== gamePk) return;
+      var r = entry.review || {};
+      var play = playsByAtBat[String(r.atBatIndex)];
+      var risk = play ? Reviews.runsAtRisk(play, r) : false;
+      var was = r.runsAtRisk === true;
+      r.runsAtRisk = risk;
+      // Notify once, and only while the game is actually under review on the
+      // play being reviewed — a desktop popup for a finished ruling would be
+      // misleading.
+      if (risk && !was && !entry.riskNotified && extracted.underReview.active &&
+          String(r.atBatIndex) === String(currentAtBat)) {
+        entry.riskNotified = true;
         notifyRunsAtRisk(entry);
       }
     });
@@ -675,9 +709,27 @@
     UI.setDateNav(date);
     UI.setStatus('Polling ' + UI.fmtDateLabel(date) + '…');
     setLiveDot('off');
+    UI.showBanner(state.notice || '');
     return Api.getSchedule(date).then(function (data) {
       if (request !== state.request) return;
       state.games = (data && data.dates && data.dates[0] && data.dates[0].games) || [];
+      // An empty slate is real data. On the default "today" view only, fall
+      // back once to the most recent date the official schedule has and say
+      // so — an offseason visit then shows the last real slate, not a blank
+      // page that looks broken.
+      if (!state.games.length && !state.autoFallbackTried) {
+        state.autoFallbackTried = true;
+        return Api.getLatestSlateDate(date).then(function (latest) {
+          if (request !== state.request) return;
+          if (latest && latest !== date) {
+            state.date = latest;
+            state.notice = 'No MLB games are scheduled on ' + UI.fmtDateLabel(date) +
+              ' (official schedule). Showing the most recent slate: ' + UI.fmtDateLabel(latest) + '.';
+            return load();
+          }
+          state.notice = '';
+        }, function () { /* best effort; the empty state still renders */ });
+      }
       // Fetch feeds sequentially in small batches to avoid hammering the API.
       var queue = state.games.slice();
       function nextBatch() {
@@ -696,7 +748,8 @@
           renderTabs();
           renderFeed();
           setLiveDot(failed ? 'err' : 'on');
-          UI.showBanner(failed ? failed + ' game feed(s) unavailable. Results are incomplete.' : '', !!failed);
+          UI.showBanner(failed ? failed + ' game feed(s) unavailable. Results are incomplete.'
+                               : (state.notice || ''), !!failed);
           UI.setStatus(state.entries.length + ' tracked event' + (state.entries.length === 1 ? '' : 's') +
             ' · ' + state.games.length + ' games · updated ' + new Date().toLocaleTimeString());
         });
@@ -753,16 +806,19 @@
   }
 
   /* --------------------------------------------------------- public */
+  function clearNotice() { state.notice = ''; }
+
   var ReplayFeed = {
     alertSoundSpec: alertSoundSpec,
-    prevDay: function () { state.date = UI.addDays(currentDate(), -1); restart(); },
-    nextDay: function () { state.date = UI.addDays(currentDate(), 1); restart(); },
+    prevDay: function () { clearNotice(); state.date = UI.addDays(currentDate(), -1); restart(); },
+    nextDay: function () { clearNotice(); state.date = UI.addDays(currentDate(), 1); restart(); },
     pickDate: function () {
       var picker = UI.$('date-picker');
       if (picker && UI.isValidDateStr(picker.value)) state.date = picker.value;
+      clearNotice();
       restart();
     },
-    today: function () { state.date = UI.todayStr(); restart(); },
+    today: function () { clearNotice(); state.date = UI.todayStr(); restart(); },
     setSoundEnabled: setSoundEnabled,
     getSoundEnabled: getSoundEnabled,
     playAlertSound: playAlertSound,
