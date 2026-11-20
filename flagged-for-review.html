@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Flagged for Review — MLB Live PBP</title>
+  <style>
+    body { font: 1rem/1.6 system-ui, sans-serif; margin: 2rem auto; max-width: 52rem; padding: 0 1rem; }
+    th, td { padding: .5rem; text-align: left; vertical-align: top; border-bottom: 1px solid #bbb; }
+    table { border-collapse: collapse; }
+  </style>
+</head>
+<body>
+<main>
+  <p><a href="index.html">← Scoreboard</a></p>
+  <h1>Flagged for Review</h1>
+  <p>Audit dated November 20, 2026. Blank values are unverified. A verified MLB label does not verify that the site can detect or display it.</p>
+  <table>
+    <thead><tr><th scope="col">Item</th><th scope="col">Verified value</th><th scope="col">Official source and finding</th></tr></thead>
+    <tbody>
+      <tr><th scope="row">Original application behavior</th><td></td><td><a href="https://api.github.com/repos/buffedlizard55-lab/MLB-Live-PBP">GitHub repository API</a> returned 404. The <a href="https://buffedlizard55-lab.github.io/MLB-Live-PBP/reviews.html">original feed</a> could not be retrieved. Exact parity is unverified.</td></tr>
+      <tr><th scope="row">Uploaded source files</th><td>Missing stylesheet and browser scripts</td><td>The <a href="https://github.com/snapquast73-boop/POSTSSNALRT/tree/ad2ea0a19b75252627c1fe80ca6ca5545f3a339f">original upload</a> contains no <code>assets/</code> or <code>docs/</code> directory. The scoreboard, game view, replay feed, and sound lab depend on missing browser code.</td></tr>
+      <tr><th scope="row">Official-scorer pending event codes</th><td><code>os_ruling_pending_primary</code>, <code>os_ruling_pending_prior</code></td><td>Both are labeled “Official Scorer Ruling Pending” in the <a href="https://statsapi.mlb.com/api/v1/eventTypes">MLB event registry</a>.</td></tr>
+      <tr><th scope="row">Selected live review status codes</th><td><code>IH</code> (Instant Replay), <code>MA</code> (Manager challenge: Tag play), <code>MF</code> (Manager challenge: Close play at 1st)</td><td>Matched against the <a href="https://statsapi.mlb.com/api/v1/gameStatus">MLB game status registry</a>. This does not validate wildcard code matching.</td></tr>
+      <tr><th scope="row">ABS field mapping and alert coverage</th><td></td><td>The <a href="https://statsapi.mlb.com/api/v1/gameStatus">MLB status registry</a> cannot establish how the missing application handled pitch events or alerts.</td></tr>
+      <tr><th scope="row">Reference recording measurements</th><td></td><td>The <a href="https://github.com/snapquast73-boop/POSTSSNALRT/blob/ad2ea0a19b75252627c1fe80ca6ca5545f3a339f/sound-lab.html">uploaded sound lab</a> lists measurements, but the upload has neither the reference audio nor the measurement tool cited there.</td></tr>
+      <tr><th scope="row">Shared feed storage and audio installation</th><td>Not provided by GitHub Pages</td><td><a href="https://docs.github.com/en/pages/getting-started-with-github-pages/what-is-github-pages">GitHub Pages hosts static content</a>; it does not run this repository’s Node server or its write endpoints.</td></tr>
+    </tbody>
+  </table>
+</main>
+</body>
+</html>

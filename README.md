@@ -1,4 +1,5 @@
 # POSTSEASONMLBALERTS
+> **Restoration audit:** This upload is missing its browser assets. See [Flagged for Review](flagged-for-review.html) for confirmed findings and verification gaps. The inherited functionality descriptions below are not a verification of this upload.
 
 **Live MLB alert feed for every tracked event — manager challenges, crew-chief/umpire reviews, boundary calls, ABS pitch challenges, official-scorer pending rulings and official scoring changes — all in one complete "All" feed, with cha-ching cash-register alerts and live tracking.**
 
@@ -77,16 +78,20 @@ Not affiliated with MLB or MLB Advanced Media. Unofficial fan project.
 
 ```bash
 # static preview (the whole repo root is the site)
+> **Restoration audit:** This upload is missing its browser assets. See [Flagged for Review](flagged-for-review.html) for confirmed findings and verification gaps. The inherited functionality descriptions below are not a verification of this upload.
 node server.mjs            # or: python3 -m http.server 8080
 
 # test suite (pure/fixtures — no network)
+> **Restoration audit:** This upload is missing its browser assets. See [Flagged for Review](flagged-for-review.html) for confirmed findings and verification gaps. The inherited functionality descriptions below are not a verification of this upload.
 node tools/reviews-feed-test.mjs
 node tools/replay-feed-render-test.mjs
 node tools/review-test.mjs
 node tools/scoring-change-test.mjs
 node tools/official-scoring-test.mjs
 # …the full list is in docs/workflows/smoke.yml; tools/smoke-test.mjs is the
+> **Restoration audit:** This upload is missing its browser assets. See [Flagged for Review](flagged-for-review.html) for confirmed findings and verification gaps. The inherited functionality descriptions below are not a verification of this upload.
 # live-API check run nightly by CI (needs network access to statsapi.mlb.com)
+> **Restoration audit:** This upload is missing its browser assets. See [Flagged for Review](flagged-for-review.html) for confirmed findings and verification gaps. The inherited functionality descriptions below are not a verification of this upload.
 ```
 
 ## Repo layout
