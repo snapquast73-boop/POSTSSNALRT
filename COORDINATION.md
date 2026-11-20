@@ -99,3 +99,5 @@ reproducible (rebuilt honestly); F-07 upstream parity unverifiable (404).
 - 1016822d — PR [#6](https://github.com/snapquast73-boop/POSTSSNALRT/pull/6): resolved additive board conflict after PR #5 landed by preserving both sessions’ complete entries; nested 404 implementation retained unchanged. Acceptance documentation task done; merge requested after passing checks.
 
 - 1016822d — Preserved PR #7 release records during a second additive board conflict. An attempted pull/rebase after the integration merge replayed the board conflict; aborted rebase to preserve both histories.
+
+- 3f78f25b release: [PR #5](https://github.com/snapquast73-boop/POSTSSNALRT/pull/5) merged (`434c7a7`); concurrent board merges superseded its first deployment. The [combined main deployment](https://github.com/snapquast73-boop/POSTSSNALRT/actions/runs/44829262037) succeeded at `8756be8` with the repair included.
