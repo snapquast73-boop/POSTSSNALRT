@@ -208,3 +208,14 @@ Two defects this session found independently in the feed were **already fixed by
 ```
 
 Reason: `qa/pages-acceptance.mjs` (owned by `4c0d40cc`, rewritten by `a35ded9a` in PR #9) asserts `#reviews-wrap .badge.abs` count == the number of official `MJ` records. Styling an overturned ABS call with the existing `.badge.abs` would have doubled that count and failed the browser acceptance run on every deploy, so ruling chips must not reuse a review-**type** class. `.badge.under-review`, already shipped and previously emitted by nothing, is used for "In progress". Nothing was removed or recoloured; both new rules reuse the existing colour variables. Recorded as G-06/G-09 in [docs/parity-audit.md](docs/parity-audit.md) and guarded by two new checks (`ruling chips never reuse a review-TYPE badge class`, `browser-harness invariant`). If the owner of `style.css` or `qa/` objects, reverting the two rules requires giving the overturned/stands chips other non-type classes, not reusing `.badge.abs`.
+
+### CI evidence for the pass-2 catch (G-09)
+
+GitHub Actions confirmed the collision empirically on this PR, with a real Chromium browser and real MLB data:
+
+| Commit | `browser` job | `fixtures` | `live` |
+| --- | --- | --- | --- |
+| `2092c23` (ruling chip styled `.badge.abs`) | **FAILURE** — [run 44833307956](https://github.com/snapquast73-boop/POSTSSNALRT/actions/runs/44833307956/job/136623410786) | SUCCESS | SUCCESS |
+| `328f0d0` (ruling chips given their own classes) | **SUCCESS** — [run 44833601563](https://github.com/snapquast73-boop/POSTSSNALRT/actions/runs/44833601563/job/136624367940) | SUCCESS | SUCCESS |
+
+PR #14 mergeability `MERGEABLE`, merge state `CLEAN`, status rollup `SUCCESS`. Local totals after the fix: **89 + 32** new checks, **105** pre-existing fixture checks, **8** audio checks — all passing; `node --check` clean; `qa/check-links.py` 0 unresolved.
