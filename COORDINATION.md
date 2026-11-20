@@ -74,3 +74,5 @@ reproducible (rebuilt honestly); F-07 upstream parity unverifiable (404).
 
 - 4c0d40cc: both sessions initially created the board. Resolved the add/add conflict by retaining both logs. [PR #2](https://github.com/snapquast73-boop/POSTSSNALRT/pull/2) merged the completed restoration (f8d07dda); all changes below are follow-up QA of that implementation, **not** a second reconstruction.
 - **In progress, 4c0d40cc:** correct post-restoration discrepancies verified against MLB in the deployed scoreboard, review extraction and game tables; source-link the tables; validate via the independent QA harness. Scope: merged `assets/js/{game,props,ui,scoreboard,reviews,reviews-feed}.js`, `sound-lab.html`, `flagged-for-review.html`, `qa/`, `.github/workflows/pages-acceptance.yml`, integration documentation. No edits to the separate fb58e457 restoration branch.
+
+- Pull attempted to linearize the integration merge and reintroduced the same board conflict. Aborted that rebase without dropping either history; retained the resolved board and synchronized with the released merge.
