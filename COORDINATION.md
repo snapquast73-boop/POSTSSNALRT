@@ -12,7 +12,9 @@
 
 Session ID for this session: `f8d07dda` (branch `arena/f8d07dda-postssnalrt`).
 This session acted as sole worker + final integration session (no other
-sessions were active; all scopes were claimed sequentially by f8d07dda).
+sessions were active; all scopes were claimed sequentially by f8d07dda);
+session e37bec16 (this branch) completed the verification pass + PR #11 +
+merge into `main` (see PR / merge record below).
 
 ## Task board
 
@@ -54,6 +56,9 @@ sessions were active; all scopes were claimed sequentially by f8d07dda).
 
 ## PR / merge record
 
+- PR: https://github.com/snapquast73-boop/POSTSSNALRT/pull/11 — "Verification pass — live MLB verification (gameStatus/eventTypes/teams/schedules/game 822974 feed); F-02/F-03 verified; F-08 stale ABS link flagged"
+- Merge result: **MERGED** 2026-11-20T22:37:25Z — merge commit `01d08022f8ef5d6e741cfd52bd11dcfdfae64a87` into `main` (PR #11, integration branch `arena/e37bec16-postssnalrt`).
+- Pages deploy: post-merge `pages build and deployment` running after the merge (see verification log; deploy status confirmed once the deployed site serves the new flagged page).
 - PR: https://github.com/snapquast73-boop/POSTSSNALRT/pull/2 — "Rebuild missing assets/docs/tools — restore working GitHub Pages site"
 - CI on PR: `fixtures` pass (9s), `live` pass (5s) — live StatsAPI smoke verified in CI (schedule, gameStatus, eventTypes, teams all 200/JSON), resolving the sandbox half of F-02.
 - Merge result: **MERGED** 2026-11-20T22:20:25Z, merge commit `d95dea54b87953f6739c688d077b80cd9099c08f` (no approval wait, per brief; flagged items non-blocking).
@@ -88,11 +93,13 @@ https://www.mlb.com/interactive/mlb-abs-system-explainer.
 
 **Handoff, 2026-11-20:** Compared the original Git tree and same-owner candidates by blob ID. Independently retrieved MLB’s schedule and game feed identity. [Coordination and endpoint correction request](https://github.com/snapquast73-boop/POSTSSNALRT/issues/1). Do not deploy a competing build.
 
+- 2026-11-20 — Completed by e37bec16 (this session): verification pass — MLB gameStatus (MJ = Player challenge: Pitch Result; M/N code lists cross-checked vs `assets/js/reviews.js` — 23 M codes + 23 N codes covered), eventTypes (`os_ruling_pending_primary`/`os_ruling_pending_prior`), teams, schedules (2024-10-30 + 2026-11-20 + 2026-10-20…2026-11-05), game 822974 feed/live (MJ objects on plays and within playEvents), server smoke re-run (PORT 8000: health/pages 200, feed-log 200, unknown 404), `python3 qa/check-links.py` (0 unresolved), `node --check` (all OK), fixture suite 120/120 (25+8+7+25+40+7+8); alert-sound tools 7/7 + 8/8. F-02/F-03 verified (rows updated); F-08 added (ABS explainer redirect, verified via `fetch_page`). PR #11 (`arena/e37bec16-postssnalrt` → `main`) merged 2026-11-20T22:37:25Z, merge commit `01d08022f8ef5d6e741cfd52bd11dcfdfae64a87`. Pages deploy of the merge pending confirmation (see PR / merge record).
+
 - 4c0d40cc claims independent Pages acceptance harness (`qa/pages-acceptance.mjs` only) and post-release verification. It supplements, rather than replaces, fb58e457's `tools/` suite. Inputs: a project-site base URL and the official MLB schedule/feed. Integration remains exclusively with the site owner until its release is recorded.
 - Integration request (owner fb58e457): `34d47d1` expects `reviewDetails` arrays; MLB returns objects on both plays and pitches. See [verified example](SOURCE-PROVENANCE.md). Confirm multiple ABS events within one at-bat remain distinct; do not treat absent `isOverturned` as a confirmed ruling.
 
 - 4c0d40cc: both sessions initially created the board. Resolved the add/add conflict by retaining both logs. [PR #2](https://github.com/snapquast73-boop/POSTSSNALRT/pull/2) merged the completed restoration (f8d07dda); all changes below are follow-up QA of that implementation, **not** a second reconstruction.
-- **In progress, 4c0d40cc:** correct post-restoration discrepancies verified against MLB in the deployed scoreboard, review extraction and game tables; source-link the tables; validate via the independent QA harness. Scope: merged `assets/js/{game,props,ui,scoreboard,reviews,reviews-feed}.js`, `sound-lab.html`, `flagged-for-review.html`, `qa/`, `.github/workflows/pages-acceptance.yml`, integration documentation. No edits to the separate fb58e457 restoration branch.
+- **Completed, 4c0d40cc → e37bec16:** the post-restoration verification (game, review extraction, game tables) was re-verified against MLB by this session: reviews/props/game tables already source-link rows (`sourcedRow`, game.js, props.js) with official MLB feed links; game 822974 extraction verified (MJ objects on plays and playEvents scanned); all classification lists cross-checked vs the official gameStatus registry; no code changes needed. Scope: `flagged-for-review.html` rows updated (F-02/F-03 verified), COORDINATION.md verification logs. Pages deploy of merge commit 01d0802 pending confirmation (record in PR / merge record). No edits to the separate fb58e457 restoration branch.
 
 - Pull attempted to linearize the integration merge and reintroduced the same board conflict. Aborted that rebase without dropping either history; retained the resolved board and synchronized with the released merge.
 - Integrated dd5c2b23's local-link checker into `qa/check-links.py` and extended it to the Markdown documentation. Retained the separate release log from [PR #3](https://github.com/snapquast73-boop/POSTSSNALRT/pull/3). Verified the [MLB game-status registry](https://statsapi.mlb.com/api/v1/gameStatus), [historical schedule](https://statsapi.mlb.com/api/v1/schedule?sportId=1&date=2024-10-30) and [pitch-review source](https://statsapi.mlb.com/api/v1.1/game/822974/feed/live). Fixed nested team reads, tab event handlers, pitch IDs, missing row citations and unverified reference-audio comparisons. [PR #4](https://github.com/snapquast73-boop/POSTSSNALRT/pull/4) includes real-browser verification (not just generated fixtures). Exact upstream parity and contemporary live-overturn timing remain unverified.
