@@ -4,14 +4,65 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>404 — MLB Live PBP</title>
-  <link rel="stylesheet" href="assets/css/style.css">
+  <meta name="robots" content="noindex">
+  <!-- Self-contained on purpose. GitHub Pages serves this file for a missing
+       path at ANY depth (/POSTSSNALRT/a/b/c), where a relative
+       href="assets/css/style.css" would resolve under /a/b/ and 404 too — so
+       the page would render unstyled. The styles below are inlined and the
+       two links are resolved to the project root by the script at the end. -->
+  <style>
+    :root { color-scheme: dark; }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0; min-height: 100vh; display: flex; align-items: center; justify-content: center;
+      background: #0f1115; color: #e6e9ef;
+      font-family: system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      line-height: 1.5; padding: 24px;
+    }
+    main { text-align: center; max-width: 520px; }
+    .ball { font-size: 52px; line-height: 1; }
+    h1 { font-size: 1.6rem; margin: 14px 0 6px; }
+    p { color: #9aa4b2; margin: 0 0 22px; }
+    .row { display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; }
+    a.btn {
+      display: inline-block; padding: 9px 16px; border-radius: 8px; text-decoration: none;
+      font-weight: 600; font-size: .9rem; color: #e6e9ef;
+      background: #1c2129; border: 1px solid #2a2f3a;
+    }
+    a.btn:hover { background: #262c36; border-color: #3b4353; }
+    a.btn.primary { background: #c92a2a; border-color: #e03131; color: #fff; }
+    a.btn.primary:hover { background: #e03131; }
+    footer { margin-top: 28px; font-size: .78rem; color: #6b7482; }
+  </style>
 </head>
 <body>
-  <main class="game-main" style="text-align:center; padding-top:80px;">
-    <div style="font-size:52px;">⚾</div>
+  <main>
+    <div class="ball">⚾</div>
     <h1>404 — Nothing at this base</h1>
-    <p style="color:var(--muted);">That page doesn't exist. Head back to the scoreboard.</p>
-    <p><a class="btn" href="index.html" style="color:#fff;">← Back to scoreboard</a></p>
+    <p>That page doesn't exist. Head back to the scoreboard.</p>
+    <div class="row">
+      <a class="btn primary" id="link-home" href="index.html">← Back to scoreboard</a>
+      <a class="btn" id="link-feed" href="reviews.html">🚨 Replay Feed</a>
+    </div>
+    <footer>
+      Unofficial fan project. Data via the public MLB StatsAPI
+      (<a href="https://statsapi.mlb.com" style="color:#74c0fc">statsapi.mlb.com</a>).
+      Not affiliated with MLB or MLB Advanced Media.
+    </footer>
   </main>
+  <script>
+    /* Project-site root: the first path segment is the repository name when the
+       request is deeper than the site root (/POSTSSNALRT/a/b -> /POSTSSNALRT/).
+       At the root itself, or under `node server.mjs` (single segment), "/" is
+       correct. No hard-coded repository name. */
+    (function () {
+      var segments = location.pathname.split('/').filter(Boolean);
+      var root = segments.length > 1 ? '/' + segments[0] + '/' : '/';
+      var home = document.getElementById('link-home');
+      var feed = document.getElementById('link-feed');
+      if (home) home.href = root + 'index.html';
+      if (feed) feed.href = root + 'reviews.html';
+    })();
+  </script>
 </body>
 </html>

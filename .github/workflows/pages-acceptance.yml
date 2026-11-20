@@ -1,30 +1,78 @@
+# Pages browser acceptance — a real browser on the real deployed site.
+#
+# Why this exists in this shape: the previous version relied on the
+# `deployment_status` event, which did not produce a usable run (the queued and
+# in-progress statuses were skipped by the job `if:`, and the `success` status
+# produced no run), and its `workflow_dispatch` path had no base URL. So the
+# deployed site was never exercised in a browser — only a locally served copy.
+#
+# Now:
+#   * `workflow_run` after "pages build and deployment" completes on main —
+#     i.e. automatically, on every deploy, against the live URL;
+#   * `workflow_dispatch` with a defaulted base URL (also usable to re-test);
+#   * `pull_request` still tests the built tree on a local static server.
 name: Pages browser acceptance
+
 on:
-  workflow_dispatch:
   pull_request:
-  deployment_status:
+  workflow_dispatch:
+    inputs:
+      base_url:
+        description: Site root URL to exercise
+        required: false
+        default: https://snapquast73-boop.github.io/POSTSSNALRT/
+  workflow_run:
+    workflows: ["pages build and deployment"]
+    types: [completed]
+    branches: [main]
+
 permissions:
   contents: read
+
 jobs:
   browser:
-    if: github.event_name != 'deployment_status' || (github.event.deployment_status.state == 'success' && github.event.deployment.environment == 'github-pages')
+    # workflow_run fires for failed Page builds too; only test a successful one.
+    if: github.event_name != 'workflow_run' || github.event.workflow_run.conclusion == 'success'
     runs-on: ubuntu-latest
-    timeout-minutes: 5
+    timeout-minutes: 20
     steps:
       - uses: actions/checkout@v4
+        with:
+          # workflow_run checks out the default branch (what was deployed).
+          ref: ${{ github.event_name == 'workflow_run' && github.event.workflow_run.head_branch || github.sha }}
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
-      - run: npm install --prefix "$RUNNER_TEMP/qa" --no-audit --no-fund playwright-core@1.58.2
-      - name: Exercise project site with official historical MLB responses
-        env:
-          DEPLOY_URL: ${{ github.event.deployment_status.environment_url }}
+      - name: Install Playwright (browser already present on the runner)
+        run: npm install --prefix "$RUNNER_TEMP/qa" --no-audit --no-fund playwright-core@1.58.2
+      - name: Serve the built tree (pull requests only)
+        if: github.event_name == 'pull_request'
         run: |
-          base="$DEPLOY_URL"
-          if [[ "$GITHUB_EVENT_NAME" == 'pull_request' ]]; then
-            mkdir -p "$RUNNER_TEMP/web"
-            ln -s "$GITHUB_WORKSPACE" "$RUNNER_TEMP/web/POSTSSNALRT"
-            python3 -m http.server 4173 --bind 127.0.0.1 --directory "$RUNNER_TEMP/web" &
+          mkdir -p "$RUNNER_TEMP/web"
+          ln -s "$GITHUB_WORKSPACE" "$RUNNER_TEMP/web/POSTSSNALRT"
+          python3 -m http.server 4173 --bind 127.0.0.1 --directory "$RUNNER_TEMP/web" &
+          sleep 1
+          curl -fsS http://127.0.0.1:4173/POSTSSNALRT/index.html > /dev/null
+      - name: Wait for the deployed site to answer
+        if: github.event_name != 'pull_request'
+        env:
+          BASE_URL: ${{ github.event.inputs.base_url || 'https://snapquast73-boop.github.io/POSTSSNALRT/' }}
+        run: |
+          for attempt in $(seq 1 60); do
+            code=$(curl -s -o /dev/null -w '%{http_code}' "$BASE_URL" || true)
+            if [ "$code" = "200" ]; then echo "live: $BASE_URL ($attempt)"; exit 0; fi
+            echo "attempt $attempt: HTTP $code"; sleep 5
+          done
+          echo "deployed site did not answer with 200 within 5 minutes"; exit 1
+      - name: Exercise the site against official MLB responses
+        env:
+          PLAYWRIGHT_MODULE: ${{ runner.temp }}/qa/node_modules/playwright-core/index.mjs
+          CHROMIUM_EXECUTABLE: /usr/bin/google-chrome
+        run: |
+          if [ "$GITHUB_EVENT_NAME" = "pull_request" ]; then
             base='http://127.0.0.1:4173/POSTSSNALRT/'
+          else
+            base='${{ github.event.inputs.base_url || 'https://snapquast73-boop.github.io/POSTSSNALRT/' }}'
           fi
-          PLAYWRIGHT_MODULE="$RUNNER_TEMP/qa/node_modules/playwright-core/index.mjs" CHROMIUM_EXECUTABLE="$(which google-chrome)" node qa/pages-acceptance.mjs "$base"
+          echo "testing $base"
+          node qa/pages-acceptance.mjs "$base"

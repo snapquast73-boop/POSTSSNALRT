@@ -13,7 +13,27 @@
   'use strict';
 
   var POLL_MS = 30000;
-  var state = { date: null, filter: 'all', games: [], timer: null, feedLog: null };
+  var state = {
+    date: null,
+    filter: 'all',
+    games: [],
+    timer: null,
+    feedLog: null,
+    notice: '',            // persistent banner (e.g. "no games today, showing …")
+    autoFallbackTried: false,
+  };
+
+  // Official team metadata (id -> team) from GET /api/v1/teams?sportId=1.
+  // The schedule payload has no abbreviation, so this is where a card's
+  // three-letter code comes from. Never invented: unknown ids stay blank.
+  var teamInfo = null;
+
+  function abbrOf(team) {
+    if (!team) return '';
+    if (team.abbreviation) return team.abbreviation;
+    if (teamInfo && team.id !== undefined && teamInfo[team.id]) return teamInfo[team.id].abbreviation || '';
+    return '';
+  }
 
   function currentDate() { return state.date || UI.todayStr(); }
 
@@ -110,7 +130,7 @@
         if (team?.team?.id) img.src = UI.teamLogo(team.team.id);
         var abbr = document.createElement('span');
         abbr.className = 'team-abbr';
-        abbr.textContent = team?.team?.abbreviation || '';
+        abbr.textContent = abbrOf(team?.team);
         var name = document.createElement('span');
         name.className = 'team-name';
         name.textContent = team?.team?.name || '';
@@ -142,10 +162,25 @@
     var date = currentDate();
     UI.setDateNav(date);
     UI.setStatus('Loading schedule for ' + UI.fmtDateLabel(date) + '…');
-    UI.showBanner('');
+    UI.showBanner(state.notice || '');
     var scheduleP = Api.getSchedule(date).then(function (data) {
       if (date !== currentDate()) return;
       state.games = (data && data.dates && data.dates[0] && data.dates[0].games) || [];
+      // An empty day is real data (off-days, the offseason). Only for the
+      // default "today" view, and only once, fall back to the most recent
+      // slate the official schedule actually has, and say so in the banner.
+      if (!state.games.length && !state.autoFallbackTried && UI.isValidDateStr(date)) {
+        state.autoFallbackTried = true;
+        return Api.getLatestSlateDate(date).then(function (latest) {
+          if (latest && latest !== date && date === currentDate()) {
+            state.date = latest;
+            state.notice = 'No MLB games are scheduled on ' + UI.fmtDateLabel(date) +
+              ' (official schedule). Showing the most recent slate: ' + UI.fmtDateLabel(latest) + '.';
+            return load();
+          }
+          state.notice = '';
+        }, function () { /* fallback is best-effort; the empty state still renders */ });
+      }
       UI.setStatus(state.games.length
         ? state.games.length + ' game' + (state.games.length === 1 ? '' : 's') + ' · updated ' + new Date().toLocaleTimeString()
         : 'No games for ' + UI.fmtDateLabel(date) + '.');
@@ -170,15 +205,18 @@
     load();
   }
 
+  function clearNotice() { state.notice = ''; }
+
   var Scoreboard = {
-    prevDay: function () { state.date = UI.addDays(currentDate(), -1); restart(); },
-    nextDay: function () { state.date = UI.addDays(currentDate(), 1); restart(); },
+    prevDay: function () { clearNotice(); state.date = UI.addDays(currentDate(), -1); restart(); },
+    nextDay: function () { clearNotice(); state.date = UI.addDays(currentDate(), 1); restart(); },
     pickDate: function () {
       var picker = UI.$('date-picker');
       if (picker && UI.isValidDateStr(picker.value)) state.date = picker.value;
+      clearNotice();
       restart();
     },
-    today: function () { state.date = UI.todayStr(); restart(); },
+    today: function () { clearNotice(); state.date = UI.todayStr(); restart(); },
     _state: state,
   };
 
@@ -187,6 +225,12 @@
     document.addEventListener('DOMContentLoaded', function () {
       state.date = UI.todayStr();
       restart();
+      // Official abbreviations are a separate registry call; repaint when it
+      // lands (silently keep the blank cell if the registry is unreachable).
+      Api.getTeamMap().then(function (map) {
+        teamInfo = map;
+        renderGames();
+      }, function () { /* abbreviations stay blank */ });
     });
   }
 })();

@@ -20,6 +20,7 @@
 
   var BASE = 'https://statsapi.mlb.com';
   var TIMEOUT_MS = 20000;
+  var teamMapPromise = null;
 
   function fetchJSON(url, options) {
     options = options || {};
@@ -65,6 +66,16 @@
     return parts.length ? '?' + parts.join('&') : '';
   }
 
+  function pad(n) { return (n < 10 ? '0' : '') + n; }
+
+  /** YYYY-MM-DD plus a whole number of days (UTC-safe: dates are plain days). */
+  function shiftDate(dateStr, days) {
+    var p = String(dateStr).split('-').map(Number);
+    var d = new Date(Date.UTC(p[0], (p[1] || 1) - 1, p[2] || 1));
+    d.setUTCDate(d.getUTCDate() + days);
+    return d.getUTCFullYear() + '-' + pad(d.getUTCMonth() + 1) + '-' + pad(d.getUTCDate());
+  }
+
   var Api = {
     BASE: BASE,
 
@@ -102,6 +113,62 @@
       return fetchJSON(BASE + '/api/v1/teams' + qs({ sportId: sportId || 1 }));
     },
 
+    /**
+     * Official team metadata keyed by team id (memoized for the page).
+     *
+     * Why: GET /api/v1/schedule returns team objects with only id/name/link —
+     * verified 2026-11-20 against
+     * https://statsapi.mlb.com/api/v1/schedule?sportId=1&date=2026-06-01
+     * (abbreviation present in the requested fields list and still absent).
+     * GET /api/v1/teams?sportId=1 does carry `abbreviation`
+     * (https://statsapi.mlb.com/api/v1/teams?sportId=1), so the scoreboard
+     * reads the official abbreviation from there instead of inventing one.
+     */
+    getTeamMap: function () {
+      if (!teamMapPromise) {
+        teamMapPromise = Api.getTeams(1).then(function (data) {
+          var map = {};
+          ((data && data.teams) || []).forEach(function (t) {
+            if (t && t.id !== undefined && t.id !== null) map[t.id] = t;
+          });
+          return map;
+        }, function (err) {
+          teamMapPromise = null; // allow a retry on the next page load
+          throw err;
+        });
+      }
+      return teamMapPromise;
+    },
+
+    /**
+     * Most recent date on or before `endDate` that has at least one game,
+     * from the official schedule. Used only when the requested day is empty
+     * (MLB has no games on many days — e.g. the whole 2026-11 offseason), so
+     * the site shows the last real slate instead of an empty page. Returns
+     * null when no game is found inside the widest window.
+     *
+     * Windows are widened progressively (14/45/200/400 days) so the common
+     * off-day costs one small request.
+     */
+    getLatestSlateDate: function (endDate) {
+      var windows = [14, 45, 200, 400];
+      function attempt(i) {
+        if (i >= windows.length) return Promise.resolve(null);
+        var start = shiftDate(endDate, -windows[i]);
+        return Api.getScheduleRange(start, endDate).then(function (data) {
+          var best = null;
+          ((data && data.dates) || []).forEach(function (day) {
+            if (!day || !day.date || !Array.isArray(day.games) || !day.games.length) return;
+            if (day.date > endDate) return;
+            if (!best || day.date > best) best = day.date;
+          });
+          if (best) return best;
+          return attempt(i + 1);
+        });
+      }
+      return attempt(0);
+    },
+
     /** GET /api/v1/people/{personId} */
     getPerson: function (personId) {
       return fetchJSON(BASE + '/api/v1/people/' + encodeURIComponent(personId));
@@ -126,6 +193,7 @@
     /** Exposed for tests / diagnostics. */
     _fetchJSON: fetchJSON,
     _qs: qs,
+    _shiftDate: shiftDate,
   };
 
   if (typeof window !== 'undefined') window.Api = Api;
