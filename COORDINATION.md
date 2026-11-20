@@ -117,3 +117,36 @@ https://www.mlb.com/interactive/mlb-abs-system-explainer.
 - 1016822d — Preserved PR #7 release records during a second additive board conflict. An attempted pull/rebase after the integration merge replayed the board conflict; aborted rebase to preserve both histories.
 
 - 3f78f25b release: [PR #5](https://github.com/snapquast73-boop/POSTSSNALRT/pull/5) merged (`434c7a7`); concurrent board merges superseded its first deployment. The [combined main deployment](https://github.com/snapquast73-boop/POSTSSNALRT/actions/runs/44829262037) succeeded at `8756be8` with the repair included.
+
+## Session 31861034 — claim (2026-11-20, branch `arena/31861034-postssnalrt`)
+
+Session ID `31861034`. Session branch is Arena-assigned (`arena/31861034-postssnalrt`); this session cannot create other branches, so all work is committed to this branch and merged to `main` through a PR from it.
+
+Claimed (non-overlapping with the in-progress V1–V3 claim of `a35ded9a`, PR #9, which owns live-site functional repair in `assets/js/*`, `404.html`, `qa/`, `tools/live-data-check.mjs`):
+
+| ID | Task | Status | Owner | Files touched |
+|----|------|--------|-------|---------------|
+| S1 | Source and link audit of every official URL cited in the repo; record fetch result, date and the claim each one supports | in progress | 31861034 | `docs/source-audit.md` (new) |
+| S2 | Line-by-line check of the deployed game table (linescore) against the official MLB linescore endpoint | in progress | 31861034 | `docs/source-audit.md` (section) |
+| S3 | Reference-parity record: deployed pages vs the two reference pages named in the request, and the unreachable upstream | in progress | 31861034 | `docs/reference-parity.md` (new) |
+| S4 | Integration: PR from this branch to `main`, CI, Pages deploy check, record in this file | pending | 31861034 | `COORDINATION.md` (append only) |
+
+Not touched by this session: `assets/js/**`, `404.html`, `index.html`, `game.html`, `reviews.html`, `sound-lab.html`, `flagged-for-review.html`, `README.md`, `qa/**`, `tools/**`, `.github/**`. Requests for changes in those files are logged below instead of being made.
+
+## Session 31861034 — results (2026-11-20)
+
+| ID | Status | Output | Sources (fetched 2026-11-20 via `fetch_page`) | Irregularities |
+|----|--------|--------|------------------------------------------------|----------------|
+| S1 source audit | **done** | [docs/source-audit.md](docs/source-audit.md) | Official: [gameStatus](https://statsapi.mlb.com/api/v1/gameStatus), [eventTypes](https://statsapi.mlb.com/api/v1/eventTypes), [schedule 2024-10-30](https://statsapi.mlb.com/api/v1/schedule?sportId=1&date=2024-10-30), [MLB Replay Review](https://www.mlb.com/glossary/rules/replay-review), [MLB Manager Challenge](https://www.mlb.com/glossary/rules/manager-challenge), [MLB Scoring Changes](https://www.mlb.com/official-information/scoring-changes), [MLB ABS explainer](https://www.mlb.com/news/abs-challenge-system-mlb-2026), [Baseball Savant ABS](https://baseballsavant.mlb.com/leaderboard/abs-challenges). Non-MLB licence/reference: [Pixabay licence](https://pixabay.com/service/license-summary/), [Pixabay 125042](https://pixabay.com/sound-effects/film-special-effects-cash-register-kaching-sound-effect-125042/), [Pixabay 88639](https://pixabay.com/sound-effects/film-special-effects-cash-register-fake-88639/), [Freesound 184438](https://freesound.org/people/CapsLok/sounds/184438/). | A-01 to A-08 (listed in the audit) |
+| S2 game-table check (775296) | **done** | section 4 of [docs/source-audit.md](docs/source-audit.md) | [linescore](https://statsapi.mlb.com/api/v1/game/775296/linescore), [live feed (filtered)](https://statsapi.mlb.com/api/v1.1/game/775296/feed/live?fields=liveData,linescore,teams,home,away,errors,runs,hits,innings,num,fielding,boxscore,teamStats,errors), [decisions](https://statsapi.mlb.com/api/v1.1/game/775296/feed/live?fields=liveData,decisions,winner,loser,save,players,fullName,id) | A-03: NYY errors **2 vs 3** between MLB's own endpoints. Page shows the feed value. Not corrected. |
+| S3 reference parity | **done** | [docs/reference-parity.md](docs/reference-parity.md) | Rendered: [LIVPBP2 reviews](https://snapquast73-boop.github.io/LIVPBP2/reviews.html), [LIVPBP2 game 775296](https://snapquast73-boop.github.io/LIVPBP2/game.html?gamePk=775296), [POSTSSNALRT reviews](https://snapquast73-boop.github.io/POSTSSNALRT/reviews.html), [POSTSSNALRT game 775296](https://snapquast73-boop.github.io/POSTSSNALRT/game.html?gamePk=775296). Upstream: [buffedlizard55-lab/MLB-Live-PBP](https://buffedlizard55-lab.github.io/MLB-Live-PBP/reviews.html) (not reachable). | The original is unreachable, so neither reference can be proven identical to it (A-01). The two references differ in tab set and props model (A-06). |
+
+**Verification performed:** every official value listed in S1/S2 was read from the cited endpoint on 2026-11-20. The Pages sites were rendered with the fetch tool. Local checks: `python3 qa/check-links.py` → 0 unresolved local references (including the two new docs); `node tools/*-test.mjs` suites unchanged and passing (no code changed in this session).
+
+**No code changed.** Functional repair of the live site (team abbreviations, runs-at-risk, empty-slate fallback, 404) remains owned by `a35ded9a` (PR #9, V1–V3, commits still active at 22:37 UTC). This session did not merge, rebase onto, or edit PR #9.
+
+**Request to owner of `flagged-for-review.html` (`a35ded9a`, task V3) — not edited here:** please add A-01 to A-08 from [docs/source-audit.md §6](docs/source-audit.md) to the Flagged for Review page, with the source links given in that file, and add the A-03 team-error discrepancy to the game-table irregularities. Until that happens, the full list is published in the repo at `docs/source-audit.md` and `docs/reference-parity.md`.
+
+**Request to owner of `README.md` (`a35ded9a`, V3) — not edited here:** A-04 (README says "verified live 2026-09-29"; the records are 2026-11-20) and A-05 ("two real cash-register recordings"; Freesound 184438 says it is not an actual cash register) should be corrected or flagged on the page.
+
+**Handoff note:** none. No claim taken over; no other session's work touched.
